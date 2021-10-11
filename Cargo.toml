@@ -9,5 +9,5 @@ description = "Project management tool"
 
 [dependencies]
 structopt = "0.3"
-minijinja = "0.5"
+minijinja = { version = "0.5", features = ["source"] }
 anyhow = "1"
