@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
+use sifis_tool::create_project;
+
 #[derive(StructOpt, Debug)]
 struct Opts {
     #[structopt(subcommand)]
@@ -24,5 +26,12 @@ enum Cmd {
 fn main() {
     let opts = Opts::from_args();
 
-    println!("{:?}", opts);
+    match opts.cmd {
+        Cmd::New {
+            template,
+            project_name,
+        } => {
+            create_project(&template, project_name.as_path()).unwrap();
+        }
+    }
 }
