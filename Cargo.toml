@@ -8,6 +8,7 @@ description = "Project management tool"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-structopt = "0.3"
-minijinja = { version = "0.5", features = ["source"] }
 anyhow = "1"
+minijinja = { version = "0.6", features = ["source"] }
+serde = { version = "1", features = ["derive"] }
+structopt = "0.3"

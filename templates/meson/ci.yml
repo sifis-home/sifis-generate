@@ -1,0 +1,57 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  workflow-steps:
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up last Python version
+      uses: actions/setup-python@v2
+
+    - name: Install meson, ninja and gcovr
+      run: |
+        pip install meson ninja gcovr
+
+    - name: Create build directory and configure settings
+      run: |
+        meson setup --buildtype release .build-directory
+
+    - name: Build the project
+      run: |
+        meson compile -C .build-directory
+
+    - name: Create a test and code coverage directory
+      run: |
+        meson setup -Db_coverage=true .build-directory-coverage
+
+    - name: Run code coverage tests
+      run: |
+        meson test -C .build-directory-coverage
+
+    - name: Export the code coverage as xml file
+      run: |
+        ninja coverage-xml -C .build-directory-coverage
+
+    - name: Create an address sanitizer instrumented build directory
+      run: |
+        meson setup --buildtype release -Db_sanitize=address -Db_lundef=false .build-directory-asan
+
+    - name: Run address sanitizer instrumented tests
+      run: |
+        meson test -C .build-directory-asan
+
+    - name: Update coverage.xml
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage
+        path: |
+          .build-directory-coverage/meson-logs/coverage.xml
