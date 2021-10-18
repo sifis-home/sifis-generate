@@ -1,9 +1,9 @@
 # Create a new executable object to test the library
 exe = executable(
   'test-{{ name }}', # Executable name
-  'test.{{ exe }}', # Tests source file
+  '{{ name }}.{{ exe }}', # Tests source file
   include_directories: incs, # Directories to be included when building the executable
-  dependencies: foo_dep # Libraries to be linked at the executable
+  dependencies: {{ name }}_dep # Libraries to be linked at the executable
 )
 
 # Create a test that run all tests contained in the executable produced above

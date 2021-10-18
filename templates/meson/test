@@ -1,6 +1,6 @@
-#include "foo.h"
+#include "{{ name ~ ".h"}}"
 
 int main()
 {
-
+    return 0;
 }
