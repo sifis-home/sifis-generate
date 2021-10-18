@@ -23,15 +23,15 @@ enum Cmd {
     },
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let opts = Opts::from_args();
 
     match opts.cmd {
         Cmd::New {
             template,
             project_name,
-        } => {
-            create_project(&template, project_name.as_path()).unwrap();
-        }
+        } => create_project(&template, project_name.as_path())?,
     }
+
+    Ok(())
 }

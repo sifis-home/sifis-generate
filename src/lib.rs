@@ -27,7 +27,7 @@ impl FromStr for Templates {
 
 /// Render a template
 trait RenderTemplate {
-    fn render(&self, project_name: &str) -> Result<()>;
+    fn render(&self, project_path: &Path, project_name: &str) -> Result<()>;
 }
 
 /// Creates a new project
@@ -49,9 +49,9 @@ pub fn create_project(template: &str, project_path: &Path) -> Result<()> {
     };
 
     let template_builder = match template_type {
-        Templates::MesonC => Meson::c_template(project_path),
-        Templates::MesonCpp => Meson::cpp_template(project_path),
+        Templates::MesonC => Meson::with_kind(ProjectKind::C),
+        Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx),
     };
 
-    template_builder.render(project_name)
+    template_builder.render(project_path, project_name)
 }

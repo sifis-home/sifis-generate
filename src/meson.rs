@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use std::fs::{create_dir_all, File};
-use std::io::Write;
+use std::fs::{create_dir_all, write};
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Result};
@@ -11,10 +10,30 @@ use crate::RenderTemplate;
 
 const MESON_FILE: &str = "meson.build";
 
-struct Template<'a> {
-    name: &'a str,
-    template: &'a str,
+macro_rules! builtin_templates {
+    ($root:expr => $(($name:expr, $template:expr)),+) => {
+        [
+        $(
+            (
+                $name,
+                include_str!(concat!("../templates/", $root, "/", $template)),
+            )
+        ),+
+        ]
+    }
 }
+
+static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
+    ("build.root", "root.build"),
+    ("build.cli", "cli.build"),
+    ("build.lib", "lib.build"),
+    ("build.test", "tests.build"),
+    ("source.lib", "lib"),
+    ("source.bin", "bin"),
+    ("source.test", "test"),
+    ("header", "header"),
+    ("ci.github", "github.yml")
+];
 
 #[derive(Serialize)]
 struct Context<'a> {
@@ -23,176 +42,113 @@ struct Context<'a> {
     params: &'a str,
 }
 
-pub(crate) struct Meson<'a> {
-    template_files: HashMap<PathBuf, Template<'a>>,
-    other_files: HashMap<PathBuf, String>,
-    dirs: [PathBuf; 5],
-    is_c: bool,
+#[derive(Debug)]
+pub(crate) enum ProjectKind {
+    /// C-language project
+    C,
+    /// C++-language project
+    Cxx,
 }
 
-impl<'a> Meson<'a> {
-    pub(crate) fn c_template(project_path: &Path) -> Self {
-        let dirs = Self::get_dirs(project_path);
-        Self {
-            template_files: Self::get_template_files(&dirs[0], &dirs[1], &dirs[2], &dirs[3]),
-            other_files: Self::get_other_files(&dirs[1], &dirs[2], &dirs[3], &dirs[4], true),
-            dirs,
-            is_c: true,
+pub(crate) struct Meson {
+    kind: ProjectKind,
+}
+
+impl Meson {
+    fn build_source() -> Source {
+        let mut source = Source::new();
+        for (name, src) in MESON_TEMPLATES {
+            source
+                .add_template(*name, *src)
+                .expect("Internal error, built-in template");
         }
+
+        source
     }
 
-    pub(crate) fn cpp_template(project_path: &Path) -> Self {
-        let dirs = Self::get_dirs(project_path);
-        Self {
-            template_files: Self::get_template_files(&dirs[0], &dirs[1], &dirs[2], &dirs[3]),
-            other_files: Self::get_other_files(&dirs[1], &dirs[2], &dirs[3], &dirs[4], false),
-            dirs,
-            is_c: false,
-        }
+    pub(crate) fn with_kind(kind: ProjectKind) -> Meson {
+        Meson { kind }
     }
 
-    fn get_template_files(
-        root: &Path,
-        cli: &Path,
-        lib: &Path,
-        tests: &Path,
-    ) -> HashMap<PathBuf, Template<'a>> {
+    /// Build a map Path <-> template
+    fn project_structure(
+        project_path: &Path,
+        name: &str,
+        src_ext: &str,
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
+        let root = project_path.to_path_buf();
+        let cli = project_path.join("cli");
+        let lib = project_path.join("lib");
+        let tests = project_path.join("tests");
+        let github = project_path.join(".github/workflows");
+
         let mut template_files = HashMap::new();
-        template_files.insert(
-            root.join(MESON_FILE),
-            Template {
-                name: "root",
-                template: include_str!("../templates/meson/root.build"),
-            },
-        );
-        template_files.insert(
-            cli.join(MESON_FILE),
-            Template {
-                name: "cli",
-                template: include_str!("../templates/meson/cli.build"),
-            },
-        );
-        template_files.insert(
-            lib.join(MESON_FILE),
-            Template {
-                name: "lib",
-                template: include_str!("../templates/meson/lib.build"),
-            },
-        );
-        template_files.insert(
-            tests.join(MESON_FILE),
-            Template {
-                name: "tests",
-                template: include_str!("../templates/meson/tests.build"),
-            },
-        );
-        template_files
-    }
+        // All the files in the root of the projects
+        template_files.insert(root.join(MESON_FILE), "build.root");
 
-    fn get_dirs(project_path: &Path) -> [PathBuf; 5] {
-        [
-            project_path.to_path_buf(),
-            project_path.join("cli"),
-            project_path.join("lib"),
-            project_path.join("tests"),
-            project_path.join(".github/workflows"),
-        ]
-    }
+        // All the files in the `cli/` directory of the project
+        template_files.insert(cli.join(MESON_FILE), "build.cli");
+        template_files.insert(cli.join(name).with_extension(src_ext), "source.bin");
 
-    fn get_other_files(
-        cli: &Path,
-        lib: &Path,
-        tests: &Path,
-        ci: &Path,
-        is_c: bool,
-    ) -> HashMap<PathBuf, String> {
-        let mut other_files = HashMap::new();
-        other_files.insert(
-            lib.join("foo.h"),
-            include_str!("../templates/meson/foo.h").to_owned(),
-        );
-        other_files.insert(
-            lib.join(if is_c { "foo.c" } else { "foo.cpp" }),
-            include_str!("../templates/meson/foo").to_owned(),
-        );
-        other_files.insert(
-            cli.join(if is_c { "main.c" } else { "main.cpp" }),
-            include_str!("../templates/meson/main").to_owned(),
-        );
-        other_files.insert(
-            tests.join(if is_c { "test.c" } else { "test.cpp" }),
-            include_str!("../templates/meson/test").to_owned(),
-        );
-        other_files.insert(
-            ci.join("ci.yml"),
-            include_str!("../templates/meson/ci.yml").to_owned(),
-        );
-        other_files
+        // All the files in the `lib/` directory of the project
+        template_files.insert(lib.join(MESON_FILE), "build.lib");
+        template_files.insert(lib.join(name).with_extension("h"), "header");
+        template_files.insert(lib.join(name).with_extension(src_ext), "source.lib");
+
+        // All the tests for the project, in `tests/`
+        template_files.insert(tests.join(MESON_FILE), "build.test");
+        template_files.insert(tests.join(name).with_extension(src_ext), "source.test");
+
+        // Continuous Integration
+        template_files.insert(github.join("ci.yml"), "ci.github");
+
+        (template_files, vec![root, cli, lib, tests, github])
     }
 }
 
-impl<'a> RenderTemplate for Meson<'a> {
-    fn render(&self, project_name: &str) -> Result<()> {
+impl RenderTemplate for Meson {
+    fn render(&self, project_path: &Path, project_name: &str) -> Result<()> {
         let mut env = Environment::new();
-        let mut templates = Source::new();
-
-        // Create dirs
-        for dir in self.dirs.iter() {
-            create_dir_all(dir)?
-        }
-
-        // Define templates
-        for template_data in self.template_files.values() {
-            // Define templates
-            if templates
-                .add_template(template_data.name, template_data.template)
-                .is_err()
-            {
-                bail!("Wrong template definition!");
-            }
-        }
-        env.set_source(templates);
+        let templates = Meson::build_source();
 
         // Define context
-        let context = if self.is_c {
-            Context {
+        let context = match self.kind {
+            ProjectKind::C => Context {
                 name: project_name,
                 exe: "c",
                 params: "c_std=c99",
-            }
-        } else {
-            Context {
+            },
+            ProjectKind::Cxx => Context {
                 name: project_name,
                 exe: "cpp",
                 params: "cpp_std=c++11",
-            }
+            },
+            // _ => todo!("{:?} not supported by Meson", self.kind),
         };
 
-        // Fill in templates
-        for (path, template_data) in &self.template_files {
-            let template = if let Ok(template) = env.get_template(template_data.name) {
-                template
-            } else {
-                bail!("Error getting {} template!", template_data.name);
-            };
-            if let Ok(filled_template) = template.render(&context) {
-                write_file(path, &filled_template)?;
-            } else {
-                bail!("Error rendering {} template!", template_data.name);
-            }
+        let (files, dirs) = Meson::project_structure(project_path, project_name, context.exe);
+
+        // Create dirs
+        for dir in dirs {
+            create_dir_all(dir)?
         }
 
-        // Create other files
-        for (path, data) in &self.other_files {
-            write_file(path, data)?;
+        env.set_source(templates);
+
+        // Fill in templates
+        for (path, template_name) in files {
+            let template = if let Ok(template) = env.get_template(template_name) {
+                template
+            } else {
+                bail!("Error getting {} template!", template_name);
+            };
+            if let Ok(filled_template) = template.render(&context) {
+                write(path, filled_template)?;
+            } else {
+                bail!("Error rendering {} template!", template_name);
+            }
         }
 
         Ok(())
     }
-}
-
-fn write_file(file_path: &Path, data: &str) -> Result<()> {
-    let mut file = File::create(file_path)?;
-    file.write_all(data.as_bytes())?;
-    Ok(())
 }

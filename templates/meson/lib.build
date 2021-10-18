@@ -1,10 +1,10 @@
 # C files contained in the directory
 lib_src = files(
-    'foo.{{ exe }}',
+    '{{ name }}.{{ exe }}',
 )
 
 # Creates the libfoo library
-foo = library(
+{{ name }} = library(
     'lib{{ name }}', # Library name
     sources: [lib_src], # Source files to build the library
     install: true, # Install the library in some default filesystem positions
@@ -12,9 +12,9 @@ foo = library(
 )
 
 # Creates a new dependency object.
-# The object allows the foo library to be linked with external executables or 
+# The object allows the foo library to be linked with external executables or
 # libraries, practically this object treats the foo library as a dependency
-foo_dep = declare_dependency(
-    link_with: foo, # Name of the library that needs to be linked
+{{ name }}_dep = declare_dependency(
+    link_with: {{ name }}, # Name of the library that needs to be linked
     include_directories: incs, # Directories to be included when linking the library
 )

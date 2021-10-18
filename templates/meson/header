@@ -1,0 +1,5 @@
+{% with guard = name | upper ~ "_H" %}
+#ifndef {{ guard }}
+#define {{ guard }}
+#endif // {{ guard }}
+{% endwith %}
