@@ -32,6 +32,9 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("source.bin", "bin"),
     ("source.test", "test"),
     ("header", "header"),
+    ("Dockerfile", "Dockerfile"),
+    ("docker.compose", "docker-compose.yml"),
+    ("run.tests", "run_tests.sh"),
     ("ci.github", "github.yml")
 ];
 
