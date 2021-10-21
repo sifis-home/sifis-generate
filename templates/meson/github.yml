@@ -55,3 +55,14 @@ jobs:
         name: coverage
         path: |
           .build-directory-coverage/meson-logs/coverage.xml
+
+  docker-compose-workflow:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run test suite with docker-compose
+      run: |
+        docker-compose up
