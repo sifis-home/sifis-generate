@@ -102,6 +102,11 @@ impl Meson {
         template_files.insert(tests.join(MESON_FILE), "build.test");
         template_files.insert(tests.join(name).with_extension(src_ext), "source.test");
 
+        // All docker files
+        template_files.insert(root.join("Dockerfile"), "Dockerfile");
+        template_files.insert(root.join("docker-compose.yml"), "docker.compose");
+        template_files.insert(root.join("run_tests.sh"), "run.tests");
+
         // Continuous Integration
         template_files.insert(github.join("ci.yml"), "ci.github");
 
