@@ -11,7 +11,6 @@ $ sifis-tool new --template meson project-name
 ## Templates
 
 - [ ] meson
-- [ ] cmake
 - [ ] yarn
 - [ ] pyproject
 - [ ] cargo
