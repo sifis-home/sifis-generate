@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
-use sifis_tool::create_project;
+use sifis_generate::create_project;
 
 #[derive(StructOpt, Debug)]
 struct Opts {

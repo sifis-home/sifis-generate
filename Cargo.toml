@@ -1,9 +1,9 @@
 [package]
-name = "sifis-tool"
+name = "sifis-generate"
 version = "0.1.0"
 edition = "2018"
 license = "MIT"
-description = "Project management tool"
+description = "Generate a new project for some build systems with the use of templates."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
