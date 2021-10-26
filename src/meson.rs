@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
 use std::path::{Path, PathBuf};
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use minijinja::{Environment, Source};
 use serde::Serialize;
 
@@ -145,16 +145,9 @@ impl RenderTemplate for Meson {
 
         // Fill in templates
         for (path, template_name) in files {
-            let template = if let Ok(template) = env.get_template(template_name) {
-                template
-            } else {
-                bail!("Error getting {} template!", template_name);
-            };
-            if let Ok(filled_template) = template.render(&context) {
-                write(path, filled_template)?;
-            } else {
-                bail!("Error rendering {} template!", template_name);
-            }
+            let template = env.get_template(template_name)?;
+            let filled_template = template.render(&context)?;
+            write(path, filled_template)?;
         }
 
         Ok(())
