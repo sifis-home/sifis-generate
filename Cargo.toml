@@ -9,6 +9,6 @@ description = "Generate a new project for some build systems with the use of tem
 
 [dependencies]
 anyhow = "1"
-minijinja = { version = "0.6", features = ["source"] }
+minijinja = { version = "0.7", features = ["source"] }
 serde = { version = "1", features = ["derive"] }
 structopt = "0.3"
