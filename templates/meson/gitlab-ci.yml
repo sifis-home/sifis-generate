@@ -1,0 +1,46 @@
+# Stages are run sequentially by the CI but each of them can contain
+# parallel tasks
+stages:
+    - build # Build the code
+    - test # Test the code
+
+# Configuration for a specific machine.
+# 1. Docker image containing all the neeeded software
+# 2. Default stage where the image will be run
+# 3. Additional software to be installed in the image
+# 4. Tags to specify which kind of GitLab runners will be used in order to
+#    run the image
+.linux-common:
+    image: python:3
+    stage: build
+    before_script:
+        - pip3 install meson ninja gcovr
+    tags:
+        - docker
+
+# Build a project on Ubuntu
+build-linux:
+    extends: .linux-common
+    script:
+        - meson setup --buildtype release .build-directory
+        - meson compile -C .build-directory
+
+# Run code coverage on Ubuntu
+coverage-linux:
+    stage: test
+    extends: .linux-common
+    script:
+        - meson setup -Db_coverage=true .build-directory-coverage
+        - meson test -C .build-directory-coverage
+        - ninja coverage-xml -C .build-directory-coverage
+
+# Run address sanitizer on Ubuntu
+address-sanitaizer-linux:
+    stage: test
+    extends: .linux-common
+    script:
+        - meson setup --buildtype release
+                      -Db_sanitize=address
+                      -Db_lundef=false
+                      .build-directory-asan
+        - meson test -C .build-directory-asan
