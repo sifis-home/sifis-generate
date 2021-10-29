@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit shell on error
+set -e
+
 meson setup --buildtype release .build-directory
 meson compile -C .build-directory
 meson setup -Db_coverage=true .build-directory-coverage
