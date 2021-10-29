@@ -18,6 +18,29 @@ stages:
     tags:
         - docker
 
+# Configuration for a specific machine.
+# 1. Environment variables defined for the image
+# 2. Docker image containing all the neeeded software
+# 3. Default stage where the image will be run
+# 4. Docker image that runs during a job linked to the Docker image defined
+#    for the machine
+# 5. Tags to specify which kind of GitLab runners will be used in order to
+#    run the image
+.docker-common:
+    variables:
+        # Determine the host to connect to
+        DOCKER_HOST: tcp://docker:2375/
+        # Storage driver, used to control how images and containers are stored
+        # and managed on a Docker host
+        DOCKER_DRIVER: overlay2
+    image: docker/compose:debian-1.29.2
+    stage: test
+    services:
+        # Docker-in-docker image
+        - docker:dind
+    tags:
+        - docker
+
 # Build a project on Ubuntu
 build-linux:
     extends: .linux-common
@@ -44,3 +67,9 @@ address-sanitaizer-linux:
                       -Db_lundef=false
                       .build-directory-asan
         - meson test -C .build-directory-asan
+
+# Run docker compose tests
+test-docker:
+    extends: .docker-common
+    script:
+        - docker-compose up
