@@ -1,3 +1,4 @@
+mod cargo;
 mod meson;
 
 use std::collections::HashMap;
@@ -9,6 +10,7 @@ use anyhow::{bail, Result};
 use minijinja::{Environment, Source};
 use serde::Serialize;
 
+use crate::cargo::*;
 use crate::meson::*;
 
 #[macro_export]
@@ -29,6 +31,7 @@ macro_rules! builtin_templates {
 enum Templates {
     MesonC,
     MesonCpp,
+    CargoCI,
 }
 
 impl FromStr for Templates {
@@ -38,6 +41,7 @@ impl FromStr for Templates {
         match input {
             "meson-c" => Ok(Self::MesonC),
             "meson-c++" => Ok(Self::MesonCpp),
+            "cargo-ci" => Ok(Self::CargoCI),
             _ => Err(()),
         }
     }
@@ -108,10 +112,11 @@ pub fn create_project(template: &str, project_path: &Path) -> Result<()> {
         bail!("Wrong template name!");
     };
 
-    let template_builder = match template_type {
-        Templates::MesonC => Meson::with_kind(ProjectKind::C),
-        Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx),
-    };
-
-    template_builder.render(project_path, project_name)
+    match template_type {
+        Templates::MesonC => Meson::with_kind(ProjectKind::C).render(project_path, project_name),
+        Templates::MesonCpp => {
+            Meson::with_kind(ProjectKind::Cxx).render(project_path, project_name)
+        }
+        Templates::CargoCI => Cargo::create_ci().render(project_path, project_name),
+    }
 }
