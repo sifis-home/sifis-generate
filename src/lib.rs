@@ -1,11 +1,29 @@
 mod meson;
 
-use std::path::Path;
+use std::collections::HashMap;
+use std::fs::{create_dir_all, write};
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use anyhow::{bail, Result};
+use minijinja::{Environment, Source};
+use serde::Serialize;
 
 use crate::meson::*;
+
+#[macro_export]
+macro_rules! builtin_templates {
+    ($root:expr => $(($name:expr, $template:expr)),+) => {
+        [
+        $(
+            (
+                $name,
+                include_str!(concat!("../templates/", $root, "/", $template)),
+            )
+        ),+
+        ]
+    }
+}
 
 /// Supported templates
 enum Templates {
@@ -25,9 +43,51 @@ impl FromStr for Templates {
     }
 }
 
-/// Render a template
-trait RenderTemplate {
-    fn render(&self, project_path: &Path, project_name: &str) -> Result<()>;
+/// Build a template
+trait BuildTemplate<'a> {
+    type Context: Serialize;
+
+    fn define(
+        &self,
+        project_path: &Path,
+        project_name: &'a str,
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Self::Context);
+
+    fn get_templates() -> &'static [(&'static str, &'static str)];
+
+    fn render(&self, project_path: &Path, project_name: &'a str) -> Result<()> {
+        let mut env = Environment::new();
+        let templates = build_source(Self::get_templates());
+
+        let (files, dirs, context) = self.define(project_path, project_name);
+
+        // Create dirs
+        for dir in dirs {
+            create_dir_all(dir)?
+        }
+
+        env.set_source(templates);
+
+        // Fill in templates
+        for (path, template_name) in files {
+            let template = env.get_template(template_name)?;
+            let filled_template = template.render(&context)?;
+            write(path, filled_template)?;
+        }
+
+        Ok(())
+    }
+}
+
+fn build_source(templates: &[(&str, &str)]) -> Source {
+    let mut source = Source::new();
+    for (name, src) in templates {
+        source
+            .add_template(*name, *src)
+            .expect("Internal error, built-in template");
+    }
+
+    source
 }
 
 /// Creates a new project

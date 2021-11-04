@@ -1,27 +1,11 @@
 use std::collections::HashMap;
-use std::fs::{create_dir_all, write};
 use std::path::{Path, PathBuf};
 
-use anyhow::Result;
-use minijinja::{Environment, Source};
 use serde::Serialize;
 
-use crate::RenderTemplate;
+use crate::{builtin_templates, BuildTemplate};
 
 const MESON_FILE: &str = "meson.build";
-
-macro_rules! builtin_templates {
-    ($root:expr => $(($name:expr, $template:expr)),+) => {
-        [
-        $(
-            (
-                $name,
-                include_str!(concat!("../templates/", $root, "/", $template)),
-            )
-        ),+
-        ]
-    }
-}
 
 static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("build.root", "root.build"),
@@ -40,7 +24,7 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
 ];
 
 #[derive(Serialize)]
-struct Context<'a> {
+pub(crate) struct Context<'a> {
     name: &'a str,
     exe: &'a str,
     params: &'a str,
@@ -59,17 +43,6 @@ pub(crate) struct Meson {
 }
 
 impl Meson {
-    fn build_source() -> Source {
-        let mut source = Source::new();
-        for (name, src) in MESON_TEMPLATES {
-            source
-                .add_template(*name, *src)
-                .expect("Internal error, built-in template");
-        }
-
-        source
-    }
-
     pub(crate) fn with_kind(kind: ProjectKind) -> Meson {
         Meson { kind }
     }
@@ -116,11 +89,14 @@ impl Meson {
     }
 }
 
-impl RenderTemplate for Meson {
-    fn render(&self, project_path: &Path, project_name: &str) -> Result<()> {
-        let mut env = Environment::new();
-        let templates = Meson::build_source();
+impl<'a> BuildTemplate<'a> for Meson {
+    type Context = Context<'a>;
 
+    fn define(
+        &self,
+        project_path: &Path,
+        project_name: &'a str,
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Self::Context) {
         // Define context
         let context = match self.kind {
             ProjectKind::C => Context {
@@ -133,25 +109,14 @@ impl RenderTemplate for Meson {
                 exe: "cpp",
                 params: "cpp_std=c++11",
             },
-            // _ => todo!("{:?} not supported by Meson", self.kind),
         };
 
         let (files, dirs) = Meson::project_structure(project_path, project_name, context.exe);
 
-        // Create dirs
-        for dir in dirs {
-            create_dir_all(dir)?
-        }
+        (files, dirs, context)
+    }
 
-        env.set_source(templates);
-
-        // Fill in templates
-        for (path, template_name) in files {
-            let template = env.get_template(template_name)?;
-            let filled_template = template.render(&context)?;
-            write(path, filled_template)?;
-        }
-
-        Ok(())
+    fn get_templates() -> &'static [(&'static str, &'static str)] {
+        MESON_TEMPLATES
     }
 }
