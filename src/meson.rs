@@ -55,6 +55,7 @@ impl Meson {
         let mut template_files = HashMap::new();
         // All the files in the root of the projects
         template_files.insert(root.join(MESON_FILE), "build.root");
+        template_files.insert(root.join("LICENSE"), "build.license");
 
         // All the files in the `cli/` directory of the project
         template_files.insert(cli.join(MESON_FILE), "build.cli");
