@@ -12,3 +12,4 @@ anyhow = "1"
 minijinja = { version = "0.7", features = ["source"] }
 serde = { version = "1", features = ["derive"] }
 structopt = "0.3"
+license = "1.1"

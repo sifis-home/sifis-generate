@@ -80,6 +80,29 @@ impl SifisTemplate {
 
         Ok(())
     }
+
+    fn add_license(&mut self, license: &str) -> anyhow::Result<()> {
+        let license =
+            license::from_id(license).ok_or_else(|| anyhow::anyhow!("Cannot find License"))?;
+
+        let header = license.header();
+        let text = license.text();
+        let id = license.id();
+
+        let mut license = HashMap::new();
+
+        license.insert("header", Value::from_serializable(&header));
+        license.insert("text", Value::from_serializable(&text));
+        license.insert("id", Value::from_serializable(&id));
+
+        self.context
+            .insert("license", Value::from_serializable(&license));
+
+        self.source
+            .add_template("build.license", "{{ license.text }}")?;
+
+        Ok(())
+    }
 }
 
 /// Build a template
@@ -121,7 +144,7 @@ fn build_source(templates: &[(&str, &str)]) -> Source {
 }
 
 /// Creates a new project
-pub fn create_project(template: &str, project_path: &Path) -> Result<()> {
+pub fn create_project(template: &str, project_path: &Path, license: &str) -> Result<()> {
     let project_name = if let Some(os_name) = project_path.file_name() {
         if let Some(name) = os_name.to_str() {
             name
@@ -138,11 +161,13 @@ pub fn create_project(template: &str, project_path: &Path) -> Result<()> {
         bail!("Wrong template name!");
     };
 
-    let template = match template_type {
+    let mut template = match template_type {
         Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name),
         Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
         Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
     };
+
+    template.add_license(license)?;
 
     template.render()
 }

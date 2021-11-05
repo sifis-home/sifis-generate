@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: {{ license.id }}
 #include "{{ name ~ ".h" }}"
 
 int main()
