@@ -6,6 +6,7 @@ use serde::Serialize;
 use crate::{builtin_templates, BuildTemplate};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
+    ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
 
@@ -23,14 +24,16 @@ impl Cargo {
         project_path: &Path,
         _name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
+        let root = project_path.to_path_buf();
         let github = project_path.join(".github/workflows");
 
         let mut template_files = HashMap::new();
 
         // Continuous Integration
+        template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
         template_files.insert(github.join("ci.yml"), "ci.github");
 
-        (template_files, vec![github])
+        (template_files, vec![root, github])
     }
 }
 
