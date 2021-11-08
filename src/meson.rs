@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use minijinja::value::Value;
 use serde::Serialize;
 
 use crate::{builtin_templates, BuildTemplate};
@@ -90,13 +91,11 @@ impl Meson {
 }
 
 impl<'a> BuildTemplate<'a> for Meson {
-    type Context = Context<'a>;
-
     fn define(
         &self,
         project_path: &Path,
         project_name: &'a str,
-    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Self::Context) {
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value) {
         // Define context
         let context = match self.kind {
             ProjectKind::C => Context {
@@ -113,7 +112,7 @@ impl<'a> BuildTemplate<'a> for Meson {
 
         let (files, dirs) = Meson::project_structure(project_path, project_name, context.exe);
 
-        (files, dirs, context)
+        (files, dirs, Value::from_serializable(&context))
     }
 
     fn get_templates() -> &'static [(&'static str, &'static str)] {

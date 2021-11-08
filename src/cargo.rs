@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use serde::Serialize;
+use minijinja::value::Value;
 
 use crate::{builtin_templates, BuildTemplate};
 
@@ -11,9 +11,6 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
 ];
 
 pub(crate) struct Cargo;
-
-#[derive(Serialize)]
-pub(crate) struct Context;
 
 impl Cargo {
     pub(crate) fn create_ci() -> Self {
@@ -38,18 +35,14 @@ impl Cargo {
 }
 
 impl<'a> BuildTemplate<'a> for Cargo {
-    type Context = Context;
-
     fn define(
         &self,
         project_path: &Path,
         project_name: &'a str,
-    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Self::Context) {
-        let context = Context;
-
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value) {
         let (files, dirs) = Cargo::project_structure(project_path, project_name);
 
-        (files, dirs, context)
+        (files, dirs, ().into())
     }
 
     fn get_templates() -> &'static [(&'static str, &'static str)] {
