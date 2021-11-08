@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use minijinja::value::Value;
-use serde::Serialize;
 
 use crate::{builtin_templates, BuildTemplate};
 
@@ -23,13 +22,6 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
-
-#[derive(Serialize)]
-pub(crate) struct Context<'a> {
-    name: &'a str,
-    exe: &'a str,
-    params: &'a str,
-}
 
 #[derive(Debug)]
 pub(crate) enum ProjectKind {
@@ -96,21 +88,17 @@ impl BuildTemplate for Meson {
         project_path: &Path,
         project_name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value) {
-        // Define context
-        let context = match self.kind {
-            ProjectKind::C => Context {
-                name: project_name,
-                exe: "c",
-                params: "c_std=c99",
-            },
-            ProjectKind::Cxx => Context {
-                name: project_name,
-                exe: "cpp",
-                params: "cpp_std=c++11",
-            },
+        let mut context = HashMap::new();
+        let (ext, params) = match self.kind {
+            ProjectKind::C => ("c", "c_std=c99"),
+            ProjectKind::Cxx => ("cpp", "cpp_std=c++11"),
         };
 
-        let (files, dirs) = Meson::project_structure(project_path, project_name, context.exe);
+        context.insert("name", Value::from_serializable(&project_name));
+        context.insert("exe", Value::from_serializable(&ext));
+        context.insert("params", Value::from_serializable(&params));
+
+        let (files, dirs) = Meson::project_structure(project_path, project_name, ext);
 
         (files, dirs, Value::from_serializable(&context))
     }
