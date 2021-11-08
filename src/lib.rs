@@ -48,16 +48,16 @@ impl FromStr for Templates {
 }
 
 /// Build a template
-trait BuildTemplate<'a> {
+trait BuildTemplate {
     fn define(
         &self,
         project_path: &Path,
-        project_name: &'a str,
+        project_name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value);
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
-    fn render(&self, project_path: &Path, project_name: &'a str) -> Result<()> {
+    fn render(&self, project_path: &Path, project_name: &str) -> Result<()> {
         let mut env = Environment::new();
         let templates = build_source(Self::get_templates());
 
