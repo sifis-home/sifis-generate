@@ -34,11 +34,11 @@ impl Cargo {
     }
 }
 
-impl<'a> BuildTemplate<'a> for Cargo {
+impl BuildTemplate for Cargo {
     fn define(
         &self,
         project_path: &Path,
-        project_name: &'a str,
+        project_name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value) {
         let (files, dirs) = Cargo::project_structure(project_path, project_name);
 

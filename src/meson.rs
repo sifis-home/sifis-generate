@@ -90,11 +90,11 @@ impl Meson {
     }
 }
 
-impl<'a> BuildTemplate<'a> for Meson {
+impl BuildTemplate for Meson {
     fn define(
         &self,
         project_path: &Path,
-        project_name: &'a str,
+        project_name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value) {
         // Define context
         let context = match self.kind {
