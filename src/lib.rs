@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use anyhow::{bail, Result};
+use minijinja::value::Value;
 use minijinja::{Environment, Source};
-use serde::Serialize;
 
 use crate::cargo::*;
 use crate::meson::*;
@@ -49,13 +49,11 @@ impl FromStr for Templates {
 
 /// Build a template
 trait BuildTemplate<'a> {
-    type Context: Serialize;
-
     fn define(
         &self,
         project_path: &Path,
         project_name: &'a str,
-    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Self::Context);
+    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value);
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
