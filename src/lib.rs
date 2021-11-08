@@ -47,6 +47,41 @@ impl FromStr for Templates {
     }
 }
 
+struct SifisTemplate {
+    context: Value,
+    files: HashMap<PathBuf, &'static str>,
+    dirs: Vec<PathBuf>,
+    source: Source,
+}
+
+impl SifisTemplate {
+    fn render(self) -> Result<()> {
+        let mut env = Environment::new();
+        let SifisTemplate {
+            context,
+            files,
+            dirs,
+            source,
+        } = self;
+
+        // Create dirs
+        for dir in dirs {
+            create_dir_all(dir)?
+        }
+
+        env.set_source(source);
+
+        // Fill in templates
+        for (path, template_name) in files {
+            let template = env.get_template(template_name)?;
+            let filled_template = template.render(&context)?;
+            write(path, filled_template)?;
+        }
+
+        Ok(())
+    }
+}
+
 /// Build a template
 trait BuildTemplate {
     fn define(
@@ -57,27 +92,16 @@ trait BuildTemplate {
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
-    fn render(&self, project_path: &Path, project_name: &str) -> Result<()> {
-        let mut env = Environment::new();
-        let templates = build_source(Self::get_templates());
-
+    fn build(&self, project_path: &Path, project_name: &str) -> SifisTemplate {
         let (files, dirs, context) = self.define(project_path, project_name);
+        let source = build_source(Self::get_templates());
 
-        // Create dirs
-        for dir in dirs {
-            create_dir_all(dir)?
+        SifisTemplate {
+            context,
+            files,
+            dirs,
+            source,
         }
-
-        env.set_source(templates);
-
-        // Fill in templates
-        for (path, template_name) in files {
-            let template = env.get_template(template_name)?;
-            let filled_template = template.render(&context)?;
-            write(path, filled_template)?;
-        }
-
-        Ok(())
     }
 }
 
@@ -110,11 +134,11 @@ pub fn create_project(template: &str, project_path: &Path) -> Result<()> {
         bail!("Wrong template name!");
     };
 
-    match template_type {
-        Templates::MesonC => Meson::with_kind(ProjectKind::C).render(project_path, project_name),
-        Templates::MesonCpp => {
-            Meson::with_kind(ProjectKind::Cxx).render(project_path, project_name)
-        }
-        Templates::CargoCI => Cargo::create_ci().render(project_path, project_name),
-    }
+    let template = match template_type {
+        Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name),
+        Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
+        Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
+    };
+
+    template.render()
 }
