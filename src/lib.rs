@@ -48,7 +48,7 @@ impl FromStr for Templates {
 }
 
 struct SifisTemplate {
-    context: Value,
+    context: HashMap<&'static str, Value>,
     files: HashMap<PathBuf, &'static str>,
     dirs: Vec<PathBuf>,
     source: Source,
@@ -88,7 +88,11 @@ trait BuildTemplate {
         &self,
         project_path: &Path,
         project_name: &str,
-    ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>, Value);
+    ) -> (
+        HashMap<PathBuf, &'static str>,
+        Vec<PathBuf>,
+        HashMap<&'static str, Value>,
+    );
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
