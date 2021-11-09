@@ -77,7 +77,7 @@ impl Meson {
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
-        template_files.insert(github.join("ci.yml"), "ci.github");
+        template_files.insert(github.join(format!("{}.yml", name)), "ci.github");
 
         (template_files, vec![root, cli, lib, tests, github])
     }

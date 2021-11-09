@@ -1,4 +1,4 @@
-name: ci
+name: {{ name }}
 
 on:
   push:
