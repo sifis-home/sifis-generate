@@ -1,0 +1,48 @@
+name: {{ name }}
+
+on: [push, pull_request]
+
+jobs:
+  style:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up last Python version
+      uses: actions/setup-python@v2
+      
+    - name: Install pre-commit and pylint
+      run: |
+       pip install pre-commit pylint
+      
+    - name: Run pre-commit
+      run: |
+       pre-commit run -a
+
+  install-tests:
+    
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest]
+
+    runs-on: {{ '${{ matrix.platform }}' }}
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up last Python version
+      uses: actions/setup-python@v2      
+    
+    - name: Install setuptools
+      run: |
+       pip install setuptools
+       
+    - name: Build and install {{ name }} in develop mode
+      run: |
+        pip install -e .[develop]
+       
+    - name: Run tests
+      run: |
+       pytest {{ name }}/    

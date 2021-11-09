@@ -1,5 +1,6 @@
 mod cargo;
 mod meson;
+mod setuptools;
 
 use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
@@ -8,10 +9,14 @@ use std::str::FromStr;
 
 use anyhow::{bail, Result};
 use minijinja::value::Value;
-use minijinja::{Environment, Source};
+use minijinja::{Environment, Error, Source, State};
+use textwrap::{wrap, Options};
 
 use crate::cargo::*;
 use crate::meson::*;
+use crate::setuptools::*;
+
+const LINE_WIDTH: usize = 79;
 
 #[macro_export]
 macro_rules! builtin_templates {
@@ -27,11 +32,23 @@ macro_rules! builtin_templates {
     }
 }
 
+fn comment_license(_state: &State, value: String, comment_char: String) -> Result<String, Error> {
+    let sep = &format!("{} ", comment_char);
+    Ok(wrap(
+        &value,
+        Options::new(LINE_WIDTH)
+            .initial_indent(sep)
+            .subsequent_indent(sep),
+    )
+    .join("\n"))
+}
+
 /// Supported templates
 enum Templates {
     MesonC,
     MesonCpp,
     CargoCI,
+    SetupTools,
 }
 
 impl FromStr for Templates {
@@ -42,6 +59,7 @@ impl FromStr for Templates {
             "meson-c" => Ok(Self::MesonC),
             "meson-c++" => Ok(Self::MesonCpp),
             "cargo-ci" => Ok(Self::CargoCI),
+            "setuptools" => Ok(Self::SetupTools),
             _ => Err(()),
         }
     }
@@ -70,6 +88,7 @@ impl SifisTemplate {
         }
 
         env.set_source(source);
+        env.add_filter("comment_license", comment_license);
 
         // Fill in templates
         for (path, template_name) in files {
@@ -86,7 +105,12 @@ impl SifisTemplate {
             license::from_id(license).ok_or_else(|| anyhow::anyhow!("Cannot find License"))?;
 
         let header = license.header();
-        let text = license.text();
+        let text: Vec<&str> = license
+            .text()
+            .lines()
+            .skip(2) // Skip a blank line and license id
+            .filter(|&x| !x.is_empty())
+            .collect();
         let id = license.id();
 
         let mut license = HashMap::new();
@@ -165,6 +189,7 @@ pub fn create_project(template: &str, project_path: &Path, license: &str) -> Res
         Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name),
         Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
         Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
+        Templates::SetupTools => SetupTools::create().build(project_path, project_name),
     };
 
     template.add_license(license)?;
