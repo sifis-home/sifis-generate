@@ -1,0 +1,36 @@
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.pylint.master]
+jobs = 0
+
+[tool.pylint.basic]
+good-names = [
+    "ex","_","w","h","i","j","x","y","x1","x2","y1","y2"
+]
+
+[tool.pylint.format]
+max-line-length = 79
+
+[tool.pylint.messages_control]
+reports = false
+disable = [
+    "import-error",
+    "missing-docstring",
+    "unused-argument",
+    "duplicate-code",
+    "too-many-return-statements",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-instance-attributes",
+    "too-many-public-methods",
+    "too-few-public-methods",
+    "no-self-use",
+]
+
+[tool.pylint.miscellaneous]
+notes = ["FIXME", "TODO"]
