@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: {{ license.id }}
-{%- with guard = name | upper ~ "_H" -%}
+{%- with guard = name | hypens_to_underscores | upper ~ "_H" -%}
 #ifndef {{ guard }}
 #define {{ guard }}
 #endif // {{ guard }}
