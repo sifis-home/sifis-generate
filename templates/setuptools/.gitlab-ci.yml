@@ -1,0 +1,35 @@
+# Stages are run sequentially by the CI but each of them can contain
+# parallel tasks
+stages:
+    - style # Code style
+    - tests # Test the code
+
+# Configuration for a specific machine.
+# 1. Docker image containing all the neeeded software
+# 2. Default stage where the image will be run
+# 3. Tags to specify which kind of GitLab runners will be used in order to
+#    run the image
+.linux-common:
+    image: python:alpine
+    stage: tests
+    tags:
+        - docker
+
+# Run style checks
+style-linux:
+    stage: style
+    extends: .linux-common
+    before_script:
+        - apk add --no-cache git gcc musl-dev
+        - pip3 install pre-commit pylint
+    script:
+        - pre-commit run -a
+
+# Run tests
+tests-linux:
+    extends: .linux-common
+    before_script:
+        - pip3 install setuptools
+    script:
+        - pip3 install -e .[develop]
+        - pytest {{ name }}/
