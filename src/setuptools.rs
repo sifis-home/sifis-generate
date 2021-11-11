@@ -13,7 +13,7 @@ static SETUPTOOLS_TEMPLATES: &[(&str, &str)] = &builtin_templates!["setuptools" 
     ("md.README", "README.md"),
     ("py.__init__", "__init__.py"),
     ("py.__main__", "__main__.py"),
-    ("py.test", "test.py"),
+    ("py.test", "test-sum.py"),
     ("ci.github", "github.yml")
 ];
 
@@ -50,7 +50,7 @@ impl SetupTools {
 
         // All files in the tests/ directory
         template_files.insert(tests.join("__init__.py"), "py.__init__");
-        template_files.insert(tests.join("test.py"), "py.test");
+        template_files.insert(tests.join("test-sum.py"), "py.test");
 
         // Continuous integration files
         template_files.insert(github.join(format!("{}.yml", name)), "ci.github");
