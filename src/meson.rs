@@ -46,6 +46,8 @@ impl Meson {
         name: &str,
         src_ext: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
+        let name = &name.replace("-", "_");
+
         let root = project_path.to_path_buf();
         let cli = project_path.join("cli");
         let lib = project_path.join("lib");

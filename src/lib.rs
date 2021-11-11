@@ -1,4 +1,5 @@
 mod cargo;
+mod filters;
 mod meson;
 mod setuptools;
 
@@ -9,14 +10,12 @@ use std::str::FromStr;
 
 use anyhow::{bail, Result};
 use minijinja::value::Value;
-use minijinja::{Environment, Error, Source, State};
-use textwrap::{wrap, Options};
+use minijinja::{Environment, Source};
 
 use crate::cargo::*;
+use crate::filters::*;
 use crate::meson::*;
 use crate::setuptools::*;
-
-const LINE_WIDTH: usize = 79;
 
 #[macro_export]
 macro_rules! builtin_templates {
@@ -30,17 +29,6 @@ macro_rules! builtin_templates {
         ),+
         ]
     }
-}
-
-fn comment_license(_state: &State, value: String, comment_char: String) -> Result<String, Error> {
-    let sep = &format!("{} ", comment_char);
-    Ok(wrap(
-        &value,
-        Options::new(LINE_WIDTH)
-            .initial_indent(sep)
-            .subsequent_indent(sep),
-    )
-    .join("\n"))
 }
 
 /// Supported templates
@@ -89,6 +77,7 @@ impl SifisTemplate {
 
         env.set_source(source);
         env.add_filter("comment_license", comment_license);
+        env.add_filter("hypens_to_underscores", hypens_to_underscores);
 
         // Fill in templates
         for (path, template_name) in files {
