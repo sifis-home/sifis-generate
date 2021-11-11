@@ -42,6 +42,7 @@ impl SetupTools {
         template_files.insert(root.join("pyproject.toml"), "toml.pyproject");
         template_files.insert(root.join(".pre-commit-config.yaml"), "yaml.pre-commit");
         template_files.insert(root.join("README.md"), "md.README");
+        template_files.insert(root.join("LICENSE.md"), "build.license");
 
         // All files in the main directory
         template_files.insert(main.join("__init__.py"), "py.__init__");
