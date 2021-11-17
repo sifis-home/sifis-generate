@@ -1,0 +1,21 @@
+# Stages are run sequentially by the CI but each of them can contain
+# parallel tasks
+stages:
+    - build # Build the code
+
+# Configuration for a specific machine.
+# 1. Docker image containing all the neeeded software
+# 2. Default stage where the image will be run
+# 3. Tags to specify which kind of GitLab runners will be used in order to
+#    run the image
+.linux-common:
+    image: node:latest
+    stage: build
+    tags:
+        - docker
+
+# Install yarn dependencies on Linux
+yarn-linux:
+    extends: .linux-common
+    script:
+        - yarn install

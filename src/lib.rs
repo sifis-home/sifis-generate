@@ -2,6 +2,7 @@ mod cargo;
 mod filters;
 mod meson;
 mod setuptools;
+mod yarn;
 
 use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
@@ -16,6 +17,7 @@ use crate::cargo::*;
 use crate::filters::*;
 use crate::meson::*;
 use crate::setuptools::*;
+use crate::yarn::*;
 
 #[macro_export]
 macro_rules! builtin_templates {
@@ -37,6 +39,7 @@ enum Templates {
     MesonCpp,
     CargoCI,
     SetupTools,
+    YarnCI,
 }
 
 impl FromStr for Templates {
@@ -48,6 +51,7 @@ impl FromStr for Templates {
             "meson-c++" => Ok(Self::MesonCpp),
             "cargo-ci" => Ok(Self::CargoCI),
             "setuptools" => Ok(Self::SetupTools),
+            "yarn-ci" => Ok(Self::YarnCI),
             _ => Err(()),
         }
     }
@@ -179,6 +183,7 @@ pub fn create_project(template: &str, project_path: &Path, license: &str) -> Res
         Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
         Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
         Templates::SetupTools => SetupTools::create().build(project_path, project_name),
+        Templates::YarnCI => Yarn::create_ci().build(project_path, project_name),
     };
 
     template.add_license(license)?;
