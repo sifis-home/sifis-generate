@@ -1,8 +1,5 @@
-mod cargo;
 mod filters;
-mod meson;
-mod setuptools;
-mod yarn;
+mod toolchain;
 
 use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
@@ -13,25 +10,8 @@ use anyhow::{bail, Result};
 use minijinja::value::Value;
 use minijinja::{Environment, Source};
 
-use crate::cargo::*;
-use crate::filters::*;
-use crate::meson::*;
-use crate::setuptools::*;
-use crate::yarn::*;
-
-#[macro_export]
-macro_rules! builtin_templates {
-    ($root:expr => $(($name:expr, $template:expr)),+) => {
-        [
-        $(
-            (
-                $name,
-                include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/", $root, "/", $template)),
-            )
-        ),+
-        ]
-    }
-}
+use filters::*;
+use toolchain::*;
 
 /// Supported templates
 enum Templates {
