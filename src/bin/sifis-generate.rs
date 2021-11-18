@@ -1,10 +1,12 @@
 use std::path::PathBuf;
 
+use structopt::clap::AppSettings;
 use structopt::StructOpt;
 
 use sifis_generate::create_project;
 
 #[derive(StructOpt, Debug)]
+#[structopt(global_settings=&[AppSettings::ColoredHelp])]
 struct Opts {
     #[structopt(subcommand)]
     cmd: Cmd,
