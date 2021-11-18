@@ -26,7 +26,7 @@ macro_rules! builtin_templates {
         $(
             (
                 $name,
-                include_str!(concat!("../templates/", $root, "/", $template)),
+                include_str!(concat!(env!("CARGO_MANIFEST_DIR"),"/templates/", $root, "/", $template)),
             )
         ),+
         ]
