@@ -4,9 +4,9 @@ mod toolchain;
 use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 use anyhow::{bail, Result};
+use arg_enum_proc_macro::ArgEnum;
 use minijinja::value::Value;
 use minijinja::{Environment, Source};
 
@@ -14,26 +14,37 @@ use filters::*;
 use toolchain::*;
 
 /// Supported templates
-enum Templates {
+#[derive(ArgEnum, Debug)]
+pub enum Templates {
+    /// Generate a meson project using C as main language
+    #[arg_enum(name = "meson-c")]
     MesonC,
+    /// Generate a meson project using C++ as main language
+    #[arg_enum(name = "meson-c++")]
     MesonCpp,
-    CargoCI,
+    /// Generate a pyproject.toml project using Python as main language
+    #[arg_enum(name = "setuptools")]
     SetupTools,
+    /// Generate a Github Action and Gitlab-CI setup for a cargo project
+    #[arg_enum(name = "cargo-ci")]
+    CargoCI,
+    /// Generate a Github Action and Gitlab-CI setup for a yarn project
+    #[arg_enum(name = "yarn-ci")]
     YarnCI,
 }
 
-impl FromStr for Templates {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input {
-            "meson-c" => Ok(Self::MesonC),
-            "meson-c++" => Ok(Self::MesonCpp),
-            "cargo-ci" => Ok(Self::CargoCI),
-            "setuptools" => Ok(Self::SetupTools),
-            "yarn-ci" => Ok(Self::YarnCI),
-            _ => Err(()),
+impl Templates {
+    pub fn info() -> String {
+        let mut info = "Available built-in templates:\n".to_string();
+        for (names, description) in Templates::descriptions() {
+            std::fmt::write(
+                &mut info,
+                format_args!("    {:<15} {}\n", names[0], description[0]),
+            )
+            .unwrap();
         }
+
+        info
     }
 }
 
@@ -141,7 +152,7 @@ fn build_source(templates: &[(&str, &str)]) -> Source {
 }
 
 /// Creates a new project
-pub fn create_project(template: &str, project_path: &Path, license: &str) -> Result<()> {
+pub fn create_project(template_type: Templates, project_path: &Path, license: &str) -> Result<()> {
     let project_name = if let Some(os_name) = project_path.file_name() {
         if let Some(name) = os_name.to_str() {
             name
@@ -150,12 +161,6 @@ pub fn create_project(template: &str, project_path: &Path, license: &str) -> Res
         }
     } else {
         bail!("Impossible to get the project name");
-    };
-
-    let template_type = if let Ok(template_type) = Templates::from_str(template) {
-        template_type
-    } else {
-        bail!("Wrong template name!");
     };
 
     let mut template = match template_type {
