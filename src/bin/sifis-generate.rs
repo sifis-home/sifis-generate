@@ -1,12 +1,10 @@
 use std::path::PathBuf;
 
-use structopt::clap::AppSettings;
-use structopt::StructOpt;
+use clap::{Parser, StructOpt};
 
 use sifis_generate::{create_project, Templates};
 
 #[derive(StructOpt, Debug)]
-#[structopt(global_settings=&[AppSettings::ColoredHelp])]
 struct Opts {
     #[structopt(subcommand)]
     cmd: Cmd,
@@ -31,7 +29,7 @@ enum Cmd {
         #[structopt(long, short, parse(try_from_str = from_id), default_value = "MIT")]
         license: String,
         /// Name of a builtin template
-        #[structopt(long, short, possible_values = &Templates::variants())]
+        #[structopt(long, short, possible_values = Templates::variants())]
         template: Templates,
         /// Path to the new project
         #[structopt(parse(from_os_str))]
@@ -40,7 +38,7 @@ enum Cmd {
 }
 
 fn main() -> anyhow::Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
 
     match opts.cmd {
         Cmd::New {
