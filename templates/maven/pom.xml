@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>{{ group }}</groupId>
+    <artifactId>{{ name }}</artifactId>
+    <version>0.1.0</version>
+
+    <name>Foo</name>
+    <description>Implementation of Foo.</description>
+    <url>https://github.com/Foo/foo</url>
+
+    <licenses>
+        <license>
+            <name>Foo License</name>
+            <url>https://foo.org</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/Foo/foo.git
+        </connection>
+        <developerConnection>
+            scm:git:https://github.com/Foo/foo.git
+        </developerConnection>
+        <url>https://github.com/Foo/foo</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <organization>
+        <name>Foo</name>
+        <url>https://foo.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>nameid</id>
+            <name>Your Name</name>
+            <url>https://github.com/nameid</url>
+            <roles>
+                <role>Administrator</role>
+                <role>Developer</role>
+            </roles>
+            <properties>
+                <picUrl>https://avatars1.githubusercontent.com/u/nameid</picUrl>
+            </properties>
+        </developer>
+    </developers>
+
+    <inceptionYear>2022</inceptionYear>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/Foo/foo/issues</url>
+    </issueManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+        </profile>
+    </profiles>
+
+    <distributionManagement>
+    </distributionManagement>
+</project>

@@ -25,6 +25,9 @@ pub enum Templates {
     /// Generate a pyproject.toml project using Python as main language
     #[arg_enum(name = "setuptools")]
     SetupTools,
+    /// Generate a maven project using Java as main language
+    #[arg_enum(name = "maven")]
+    Maven,
     /// Generate a Github Action and Gitlab-CI setup for a cargo project
     #[arg_enum(name = "cargo-ci")]
     CargoCI,
@@ -166,6 +169,20 @@ pub fn create_project(template_type: Templates, project_path: &Path, license: &s
     let mut template = match template_type {
         Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name),
         Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
+        Templates::Maven => {
+            let (group, project_path, project_name) =
+                if let Some((group, name)) = project_name.rsplit_once('.') {
+                    let parent = project_path.parent();
+                    if let Some(parent) = parent {
+                        (group, parent.join(name), name)
+                    } else {
+                        (group, Path::new(name).to_path_buf(), name)
+                    }
+                } else {
+                    bail!("Impossible to find Java group and name");
+                };
+            Maven::create(group).build(&project_path, project_name)
+        }
         Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
         Templates::SetupTools => SetupTools::create().build(project_path, project_name),
         Templates::YarnCI => Yarn::create_ci().build(project_path, project_name),
