@@ -13,7 +13,7 @@ homepage = "https://github.com/sifis-home/sifis-generate"
 [dependencies]
 anyhow = "1"
 license = "1.1"
-minijinja = { version = "0.8", features = ["source"] }
+minijinja = { version = "0.14", features = ["source"] }
 serde = { version = "1", features = ["derive"] }
 structopt = "0.3"
 textwrap = "0.14"
