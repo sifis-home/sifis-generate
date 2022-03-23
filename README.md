@@ -14,6 +14,7 @@ tests and implement further checks.
 
 - [x] meson
 - [x] setuptools
+- [x] maven
 
 ## Build systems CI files
 
@@ -53,6 +54,11 @@ Some templates also produces files to configure the `Docker` environment.
    - .pre-commit-config.yaml
    - github.yml
    - .gitlab-ci.yml
+- **maven**
+   - `main` directory for library source files
+   - `test` directory for tests source files
+   - pom.xml
+   - github.yml
 - **cargo**
    - github.yml
    - .gitlab-ci.yml
