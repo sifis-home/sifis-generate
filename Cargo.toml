@@ -1,6 +1,6 @@
 [package]
 name = "sifis-generate"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2018"
 license = "MIT"
 description = "Generate a new project for some build systems with the use of templates."
