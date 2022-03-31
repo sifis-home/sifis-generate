@@ -88,8 +88,9 @@ impl SifisTemplate {
     }
 
     fn add_license(&mut self, license: &str) -> anyhow::Result<()> {
-        let license =
-            license::from_id(license).ok_or_else(|| anyhow::anyhow!("Cannot find License"))?;
+        let license = license
+            .parse::<&dyn license::License>()
+            .map_err(|_| anyhow::anyhow!("Cannot find License"))?;
 
         let header = license.header();
         let text: Vec<&str> = license
