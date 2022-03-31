@@ -11,9 +11,9 @@ struct Opts {
 }
 
 fn from_id(id: &str) -> anyhow::Result<String> {
-    license::from_id(id)
+    id.parse::<&dyn license::License>()
         .map(|_| id.to_owned())
-        .ok_or_else(|| anyhow::anyhow!("License not found"))
+        .map_err(|_| anyhow::anyhow!("License not found"))
 }
 
 lazy_static::lazy_static! {
