@@ -59,10 +59,10 @@ Some templates also produces files to configure the `Docker` environment.
    - `test` directory for tests source files
    - pom.xml
    - github.yml
-- **cargo**
+- **cargo-ci**
    - github.yml
    - .gitlab-ci.yml
-- **yarn**
+- **yarn-ci**
    - github.yml
    - .gitlab-ci.yml
 
