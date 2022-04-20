@@ -160,3 +160,104 @@ jobs:
       with:
         name: {{ '${{ matrix.rca-output-dir }}' }}-{{ '${{ matrix.conf }}' }}
         path: ~/{{ '${{ matrix.rca-output-dir }}' }}
+
+  weighted-code-coverage:
+
+    env:
+      GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+      GRCOV_VERSION: v0.8.7
+      WCC_LINK: https://github.com/giovannitangredi/weighted-code-coverage/releases/download
+      WCC_VERSION: v0.1.0
+
+    strategy:
+      matrix:
+        conf:
+          - ubuntu
+          - macos
+          - windows
+        include:
+          - conf: ubuntu
+            os: ubuntu-latest
+            grcov-binary: grcov-x86_64-unknown-linux-musl.tar.bz2
+            wcc-binary: weighted-code-coverage-0.1.0-x86_64-unknown-linux-gnu.tar.gz
+            wcc-output-dir: wcc-output
+            wcc-output-file: out.json
+          - conf: macos
+            os: macos-latest
+            grcov-binary: grcov-x86_64-apple-darwin.tar.bz2
+            wcc-binary: weighted-code-coverage-0.1.0-x86_64-apple-darwin.tar.gz
+            wcc-output-dir: wcc-output
+            wcc-output-file: out.json
+          - conf: windows
+            os: windows-latest
+            grcov-binary: grcov-x86_64-pc-windows-msvc.zip
+            wcc-binary: weighted-code-coverage-0.1.0-x86_64-pc-windows-msvc.zip
+            wcc-output-dir: wcc-output
+            wcc-output-file: out.json
+
+    runs-on: {{ '${{ matrix.os }}' }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: Install grcov on Unix
+      if: matrix.conf != 'windows'
+      run: |
+        curl -L "$GRCOV_LINK/$GRCOV_VERSION/{{ '${{ matrix.grcov-binary }}' }}" |
+        tar xj -C $HOME/.cargo/bin
+
+    - name: Install grcov on Windows
+      if: matrix.conf == 'windows'
+      run: |
+        curl -LO "$Env:GRCOV_LINK/$Env:GRCOV_VERSION/{{ '${{ matrix.grcov-binary }}' }}"
+        7z e -y "{{ '${{ matrix.grcov-binary }}' }}" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Install weighted-code-coverage on Unix
+      if: matrix.conf != 'windows'
+      run: |
+        curl -L "$WCC_LINK/$WCC_VERSION/{{ '${{ matrix.wcc-binary }}' }}" |
+        tar xz -C $HOME/.cargo/bin
+
+    - name: Install weighted-code-coverage on Windows
+      if: matrix.conf == 'windows'
+      run: |
+        curl -LO "$Env:WCC_LINK/$Env:WCC_VERSION/{{ '${{ matrix.wcc-binary }}' }}"
+        7z e -y "{{ '${{ matrix.wcc-binary }}' }}" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        RUSTFLAGS: "-Cinstrument-coverage"
+        LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
+      run: |
+        cargo test --workspace --all-features --verbose
+
+    - name: Run grcov
+      run: |
+        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
+
+    - name: Run weighted-code-coverage
+      run: |
+        mkdir $HOME/{{ '${{ matrix.wcc-output-dir }}' }}
+        weighted-code-coverage -p src/ -j coveralls.json -c --json $HOME/{{ '${{ matrix.wcc-output-dir }}' }}/{{ '${{ matrix.wcc-output-file }}' }}
+
+    - name: Upload weighted-code-coverage data
+      uses: actions/upload-artifact@v3
+      with:
+        name: weighted-code-coverage-{{ '${{ matrix.conf }}' }}
+        path: ~/{{ '${{ matrix.wcc-output-dir }}' }}/{{ '${{ matrix.wcc-output-file }}' }}
