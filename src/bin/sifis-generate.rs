@@ -3,9 +3,13 @@ use std::path::PathBuf;
 use clap::Parser;
 
 use sifis_generate::{create_project, Templates};
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Debug)]
 struct Opts {
+    /// Output the generated paths as they are produced
+    #[clap(short, long, global = true)]
+    verbose: bool,
     #[clap(subcommand)]
     cmd: Cmd,
 }
@@ -39,6 +43,22 @@ enum Cmd {
 
 fn main() -> anyhow::Result<()> {
     let opts = Opts::parse();
+
+    let filter_layer = EnvFilter::try_from_default_env()
+        .or_else(|_| {
+            if opts.verbose {
+                EnvFilter::try_new("debug")
+            } else {
+                EnvFilter::try_new("info")
+            }
+        })
+        .unwrap();
+
+    tracing_subscriber::fmt()
+        .without_time()
+        .with_env_filter(filter_layer)
+        .with_writer(std::io::stderr)
+        .init();
 
     match opts.cmd {
         Cmd::New {
