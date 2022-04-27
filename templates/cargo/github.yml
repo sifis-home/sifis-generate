@@ -62,7 +62,35 @@ jobs:
     - name: Generate docs
       run: cargo doc --no-deps
 
-  dynamic-analysis:
+  stable-dynamic-analysis:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install valgrind
+      run: |
+        sudo apt-get install valgrind
+
+    # FIXME Use binaries
+    - name: Install cargo-valgrind
+      run: |
+        cargo install cargo-valgrind
+
+    # Usage of the `help` command as base command, please replace it
+    # with the effective command that valgrind has to analyze
+    - name: Run cargo-valgrind
+      run: |
+        cargo valgrind run -- --help
+
+  nightly-dynamic-analysis:
 
     runs-on: ubuntu-latest
 
@@ -78,14 +106,19 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ '${{ hashFiles("**/Cargo.toml") }}' }}
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install Rust nightly
+    - name: Install Rust nightly and miri
       uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
         components: miri
         override: true
+
+    # FIXME Use binaries
+    - name: Install cargo-fuzz
+      run: |
+        cargo install cargo-fuzz
 
     - name: Run miri
       env:
@@ -98,8 +131,25 @@ jobs:
         # -Zmiri-tag-raw-pointers enables a lot of extra UB checks relating
         # to raw pointer aliasing rules.
         # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS:  -Zmiri-check-number-validity -Zmiri-tag-raw-pointers -Zmiri-symbolic-alignment-check
+        MIRIFLAGS: >
+          -Zmiri-check-number-validity -Zmiri-tag-raw-pointers
+          -Zmiri-symbolic-alignment-check
       run: cargo miri test
+
+    # FIXME Create a template with a dummy series of fuzzy tests
+    - name: Init cargo-fuzz
+      run: cargo fuzz init
+
+    - name: Run cargo-fuzz
+      run: cargo fuzz build
+
+    # Usage of the `help` command as base command, please replace it
+    # with the effective command that AddressSanitizer has to analyze
+    - name: Run AddressSanitizer
+      env:
+        RUSTFLAGS: -Zsanitizer=address
+        RUSTDOCFLAGS: -Zsanitizer=address
+      run: cargo run -Zbuild-std --target x86_64-unknown-linux-gnu -- --help
 
   rust-code-analysis:
 
