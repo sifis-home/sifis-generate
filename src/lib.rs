@@ -9,6 +9,7 @@ use anyhow::{bail, Result};
 use arg_enum_proc_macro::ArgEnum;
 use minijinja::value::Value;
 use minijinja::{Environment, Source};
+use tracing::debug;
 
 use filters::*;
 use toolchain::*;
@@ -70,6 +71,7 @@ impl SifisTemplate {
 
         // Create dirs
         for dir in dirs {
+            debug!("Creating {}", dir.display());
             create_dir_all(dir)?
         }
 
@@ -79,6 +81,7 @@ impl SifisTemplate {
 
         // Fill in templates
         for (path, template_name) in files {
+            debug!("Creating {}", path.display());
             let template = env.get_template(template_name)?;
             let filled_template = template.render(&context)?;
             write(path, filled_template)?;

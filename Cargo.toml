@@ -19,3 +19,5 @@ serde = { version = "1", features = ["derive"] }
 textwrap = "0.15"
 arg_enum_proc_macro = "0.3.2"
 lazy_static = "1.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
