@@ -241,7 +241,7 @@ jobs:
         RUSTFLAGS: "-Cinstrument-coverage"
         LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
       run: |
-        cargo test --workspace --all-features --verbose
+        cargo test --verbose
 
     - name: Run grcov
       run: |
