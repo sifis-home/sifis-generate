@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use clap::{Parser, StructOpt};
+use clap::Parser;
 
 use sifis_generate::{create_project, Templates};
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 struct Opts {
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     cmd: Cmd,
 }
 
@@ -20,7 +20,7 @@ lazy_static::lazy_static! {
     static ref TEMPLATES_INFO: String = Templates::info();
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(Parser, Debug)]
 enum Cmd {
     /// Create a new project
     #[structopt(after_help = TEMPLATES_INFO.as_str())]
