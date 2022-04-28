@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install stable
       uses: actions-rs/toolchain@v1
@@ -44,7 +44,7 @@ jobs:
     runs-on: {{ '${{ matrix.platform }}' }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Rust {{ '${{ matrix.toolchain }}' }}
       uses: actions-rs/toolchain@v1
@@ -177,7 +177,7 @@ jobs:
     runs-on: {{ '${{ matrix.os }}' }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install rust-code-analysis on Ubuntu
       if: matrix.conf == 'ubuntu'
@@ -244,7 +244,7 @@ jobs:
     runs-on: {{ '${{ matrix.os }}' }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install stable
       uses: actions-rs/toolchain@v1
