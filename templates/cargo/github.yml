@@ -62,6 +62,84 @@ jobs:
     - name: Generate docs
       run: cargo doc --no-deps
 
+  code-coverage:
+
+    env:
+      GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+      GRCOV_VERSION: v0.8.7
+
+    strategy:
+      matrix:
+        conf:
+          - ubuntu
+          - macos
+        include:
+          - conf: ubuntu
+            os: ubuntu-latest
+            grcov-binary: grcov-x86_64-unknown-linux-musl.tar.bz2
+          - conf: macos
+            os: macos-latest
+            grcov-binary: grcov-x86_64-apple-darwin.tar.bz2
+
+    runs-on: {{ '${{ matrix.os }}' }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: Install grcov on Unix
+      run: |
+        curl -L "$GRCOV_LINK/$GRCOV_VERSION/{{ '${{ matrix.grcov-binary }}' }}" |
+        tar xj -C $HOME/.cargo/bin
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        RUSTFLAGS: "-Cinstrument-coverage"
+        LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
+      run: |
+        cargo test --verbose
+
+    - name: Run grcov
+      run: |
+        grcov . --binary-path ./target/debug/ -t covdir -s . --token YOUR_COVDIR_TOKEN > covdir.json
+
+    - name: Evaluate CI value
+      shell: bash
+      run: |
+        # Retrieve code coverage associated to the repository
+        FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
+        # Round the float value to the nearest value
+        COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
+        # If code coverage is greater than 80, green traffic light
+        if [ $COVERAGE_OUTPUT -ge 80 ]
+        then
+            echo Green
+        # If code coverage is greater than 60, orange traffic light
+        elif [ $COVERAGE_OUTPUT -ge 60 ]
+        then
+            echo Orange
+        # Otherwise, red traffic light
+        else
+            echo Red
+            exit 1
+        fi
+
+
   stable-dynamic-analysis:
 
     runs-on: ubuntu-latest
