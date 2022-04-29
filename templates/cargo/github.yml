@@ -124,17 +124,17 @@ jobs:
         FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
         # Round the float value to the nearest value
         COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
-        # If code coverage is greater than 80, green traffic light
+        # If code coverage >= 80, green traffic light
         if [ $COVERAGE_OUTPUT -ge 80 ]
         then
-            echo Green
-        # If code coverage is greater than 60, orange traffic light
+            echo "$COVERAGE_OUTPUT > 80 --> Green"
+        # If code coverage is >=60 but < 80, orange traffic light
         elif [ $COVERAGE_OUTPUT -ge 60 ]
         then
-            echo Orange
+            echo "60 <= $COVERAGE_OUTPUT < 80 --> Orange"
         # Otherwise, red traffic light
         else
-            echo Red
+            echo "$COVERAGE_OUTPUT < 60 --> Red"
             exit 1
         fi
 
