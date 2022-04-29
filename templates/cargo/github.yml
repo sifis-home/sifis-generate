@@ -117,7 +117,7 @@ jobs:
       run: |
         grcov . --binary-path ./target/debug/ -t covdir -s . --token YOUR_COVDIR_TOKEN > covdir.json
 
-    - name: Evaluate CI value
+    - name: Evaluate code coverage value
       shell: bash
       run: |
         # Retrieve code coverage associated to the repository
