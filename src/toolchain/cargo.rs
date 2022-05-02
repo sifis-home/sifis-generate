@@ -7,6 +7,7 @@ use crate::{builtin_templates, BuildTemplate};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.gitlab", ".gitlab-ci.yml"),
+    ("ci.github.compact", "github-compact.yml"),
     ("ci.github.ubuntu", "github-ubuntu.yml"),
     ("ci.github.macos", "github-macos.yml"),
     ("ci.github.windows", "github-windows.yml")
@@ -30,6 +31,10 @@ impl Cargo {
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
+        template_files.insert(
+            github.join(format!("{}-compact.yml", name)),
+            "ci.github.compact",
+        );
         template_files.insert(
             github.join(format!("{}-ubuntu.yml", name)),
             "ci.github.ubuntu",
