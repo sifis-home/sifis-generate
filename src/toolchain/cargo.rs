@@ -7,7 +7,9 @@ use crate::{builtin_templates, BuildTemplate};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.gitlab", ".gitlab-ci.yml"),
-    ("ci.github", "github.yml")
+    ("ci.github.ubuntu", "github-ubuntu.yml"),
+    ("ci.github.macos", "github-macos.yml"),
+    ("ci.github.windows", "github-windows.yml")
 ];
 
 pub(crate) struct Cargo;
@@ -28,7 +30,18 @@ impl Cargo {
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
-        template_files.insert(github.join(format!("{}.yml", name)), "ci.github");
+        template_files.insert(
+            github.join(format!("{}-ubuntu.yml", name)),
+            "ci.github.ubuntu",
+        );
+        template_files.insert(
+            github.join(format!("{}-macos.yml", name)),
+            "ci.github.macos",
+        );
+        template_files.insert(
+            github.join(format!("{}-windows.yml", name)),
+            "ci.github.windows",
+        );
 
         (template_files, vec![root, github])
     }
