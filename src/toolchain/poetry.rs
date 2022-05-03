@@ -5,22 +5,20 @@ use minijinja::value::Value;
 
 use crate::{builtin_templates, BuildTemplate};
 
-static SETUPTOOLS_TEMPLATES: &[(&str, &str)] = &builtin_templates!["setuptools" =>
-    ("py.setup", "setup.py"),
-    ("cfg.setup", "setup.cfg"),
+static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
     ("toml.pyproject", "pyproject.toml"),
     ("yaml.pre-commit", ".pre-commit-config.yaml"),
     ("md.README", "README.md"),
     ("py.__init__", "__init__.py"),
     ("py.__main__", "__main__.py"),
-    ("py.test", "test-sum.py"),
+    ("py.test", "test_sum.py"),
     ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
 
-pub(crate) struct SetupTools;
+pub(crate) struct Poetry;
 
-impl SetupTools {
+impl Poetry {
     pub(crate) fn create() -> Self {
         Self
     }
@@ -38,8 +36,6 @@ impl SetupTools {
         let mut template_files = HashMap::new();
 
         // All the files in the root of the projects
-        template_files.insert(root.join("setup.py"), "py.setup");
-        template_files.insert(root.join("setup.cfg"), "cfg.setup");
         template_files.insert(root.join("pyproject.toml"), "toml.pyproject");
         template_files.insert(root.join(".pre-commit-config.yaml"), "yaml.pre-commit");
         template_files.insert(root.join("README.md"), "md.README");
@@ -51,7 +47,7 @@ impl SetupTools {
 
         // All files in the tests/ directory
         template_files.insert(tests.join("__init__.py"), "py.__init__");
-        template_files.insert(tests.join("test-sum.py"), "py.test");
+        template_files.insert(tests.join("test_sum.py"), "py.test");
 
         // Continuous integration files
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
@@ -61,7 +57,7 @@ impl SetupTools {
     }
 }
 
-impl BuildTemplate for SetupTools {
+impl BuildTemplate for Poetry {
     fn define(
         &self,
         project_path: &Path,
@@ -75,12 +71,12 @@ impl BuildTemplate for SetupTools {
 
         context.insert("name", Value::from_serializable(&project_name));
 
-        let (files, dirs) = SetupTools::project_structure(project_path, project_name);
+        let (files, dirs) = Poetry::project_structure(project_path, project_name);
 
         (files, dirs, context)
     }
 
     fn get_templates() -> &'static [(&'static str, &'static str)] {
-        SETUPTOOLS_TEMPLATES
+        POETRY_TEMPLATES
     }
 }
