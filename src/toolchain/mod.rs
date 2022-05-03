@@ -1,13 +1,13 @@
 pub mod cargo;
 pub mod maven;
 pub mod meson;
-pub mod setuptools;
+pub mod poetry;
 pub mod yarn;
 
 pub(crate) use cargo::*;
 pub(crate) use maven::*;
 pub(crate) use meson::*;
-pub(crate) use setuptools::*;
+pub(crate) use poetry::*;
 pub(crate) use yarn::*;
 
 #[macro_export]

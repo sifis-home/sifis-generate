@@ -13,19 +13,23 @@ jobs:
     - name: Set up last Python version
       uses: actions/setup-python@v2
 
-    - name: Install pre-commit and pylint
+    - name: Install poetry
       run: |
-       pip install pre-commit pylint
+        pip install poetry
+
+    - name: Install dependencies
+      run: |
+        poetry install
 
     - name: Run pre-commit
       run: |
-       pre-commit run -a
+        poetry run pre-commit run -a
 
   install-tests:
 
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: {{ '${{ matrix.platform }}' }}
 
@@ -35,14 +39,14 @@ jobs:
     - name: Set up last Python version
       uses: actions/setup-python@v2
 
-    - name: Install setuptools
+    - name: Install poetry
       run: |
-       pip install setuptools
+        pip install poetry
 
-    - name: Build and install {{ name }} in develop mode
+    - name: Install dependencies
       run: |
-        pip install -e .[develop]
+        poetry install
 
     - name: Run tests
       run: |
-       pytest {{ name }}/
+        poetry run pytest

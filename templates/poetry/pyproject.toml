@@ -1,0 +1,71 @@
+[tool.poetry]
+name = "{{ name }}"
+version = "0.0"
+description = "Description of your tool"
+authors = ["Name Surname <name.surname@email.org>"]
+repository = "https://url-to-your-repository.com"
+license = "MIT"
+classifiers = [
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3 :: Only",
+]
+include = ["README.md", "LICENSE.md", "{{ name }}/data/*"]
+packages = [
+    { include = "{{ name }}" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+black = "^21.12b0"
+pre-commit = "^2.16.0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+strict = true
+disallow_untyped_decorators = false
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.pylint.master]
+jobs = 0
+
+[tool.pylint.basic]
+good-names = [
+    "ex","_","w","h","i","j","x","y","x1","x2","y1","y2"
+]
+
+[tool.pylint.format]
+max-line-length = 79
+
+[tool.pylint.messages_control]
+reports = false
+disable = [
+    "import-error",
+    "missing-docstring",
+    "unused-argument",
+    "duplicate-code",
+    "too-many-return-statements",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-instance-attributes",
+    "too-many-public-methods",
+    "too-few-public-methods",
+    "no-self-use",
+]
+
+[tool.pylint.miscellaneous]
+notes = ["FIXME", "TODO"]

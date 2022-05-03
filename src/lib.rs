@@ -24,8 +24,8 @@ pub enum Templates {
     #[arg_enum(name = "meson-c++")]
     MesonCpp,
     /// Generate a pyproject.toml project using Python as main language
-    #[arg_enum(name = "setuptools")]
-    SetupTools,
+    #[arg_enum(name = "poetry")]
+    Poetry,
     /// Generate a maven project using Java as main language
     #[arg_enum(name = "maven")]
     Maven,
@@ -188,7 +188,7 @@ pub fn create_project(template_type: Templates, project_path: &Path, license: &s
             Maven::create(group).build(&project_path, project_name)
         }
         Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
-        Templates::SetupTools => SetupTools::create().build(project_path, project_name),
+        Templates::Poetry => Poetry::create().build(project_path, project_name),
         Templates::YarnCI => Yarn::create_ci().build(project_path, project_name),
     };
 
