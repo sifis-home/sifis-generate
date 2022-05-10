@@ -92,14 +92,32 @@ jobs:
 
     - name: Run tests
       env:
-        RUSTFLAGS: "-Cinstrument-coverage"
+        CARGO_INCREMENTAL: 0
         LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
+        RUSTFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+        RUSTDOCFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
       run: |
         cargo test --verbose
 
-    - name: Run grcov
+    - name: Get coverage data for coveralls
       run: |
-        grcov . --binary-path ./target/debug/ -t covdir -s . --token YOUR_COVDIR_TOKEN > covdir.json
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
+
+    - name: Coveralls upload
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: {{ '${{ secrets.GITHUB_TOKEN }}' }}
+        path-to-lcov: lcov.info
+
+    - name: Get total coverage
+      run: |
+        grcov . --binary-path ./target/debug/ -t covdir -s . \
+              --token YOUR_COVDIR_TOKEN > covdir.json
 
     - name: Evaluate code coverage value
       shell: bash
