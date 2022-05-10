@@ -15,3 +15,4 @@ repos:
   - id: pylint
     additional_dependencies: [toml]
     verbose: true
+

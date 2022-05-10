@@ -9,3 +9,4 @@ cli_src = files('{{ name | hypens_to_underscores }}.{{ exe }}')
     include_directories: incs, # Directories to be included when building the executable
     dependencies: {{ name | hypens_to_underscores }}_dep # Libraries to be linked at the executable
 )
+

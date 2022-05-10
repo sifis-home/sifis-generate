@@ -6,3 +6,4 @@
 def test_sum():
     """Simple test."""
     assert 2 + 2 == 4
+

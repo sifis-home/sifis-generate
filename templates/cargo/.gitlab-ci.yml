@@ -98,3 +98,4 @@ docs-beta:
     extends: .rust-beta
     script:
         - cargo doc --no-deps
+

@@ -32,3 +32,4 @@ tests-linux:
     extends: .linux-common
     script:
         - poetry run pytest
+

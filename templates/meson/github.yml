@@ -66,3 +66,4 @@ jobs:
     - name: Run test suite with docker-compose
       run: |
         docker-compose up
+

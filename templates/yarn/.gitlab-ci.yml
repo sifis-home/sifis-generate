@@ -19,3 +19,4 @@ yarn-linux:
     extends: .linux-common
     script:
         - yarn install
+

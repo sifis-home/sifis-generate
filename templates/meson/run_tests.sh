@@ -10,3 +10,4 @@ meson test -C .build-directory-coverage
 ninja coverage-xml -C .build-directory-coverage
 meson setup --buildtype release -Db_sanitize=address -Db_lundef=false .build-directory-asan
 meson test -C .build-directory-asan
+

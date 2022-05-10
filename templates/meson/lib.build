@@ -18,3 +18,4 @@ lib_src = files(
     link_with: {{ name | hypens_to_underscores }}, # Name of the library that needs to be linked
     include_directories: incs, # Directories to be included when linking the library
 )
+

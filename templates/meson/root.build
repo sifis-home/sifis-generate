@@ -29,3 +29,4 @@ incs = include_directories('.', 'lib', 'cli')
 subdir('lib')
 subdir('cli')
 subdir('tests')
+

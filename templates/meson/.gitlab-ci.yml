@@ -73,3 +73,4 @@ test-docker:
     extends: .docker-common
     script:
         - docker-compose up
+

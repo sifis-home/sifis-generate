@@ -5,3 +5,4 @@ services:
     command: ./run_tests.sh
     volumes:
       - .:/src
+
