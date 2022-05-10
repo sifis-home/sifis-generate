@@ -58,7 +58,11 @@ Some templates also produces files to configure the `Docker` environment.
    - pom.xml
    - github.yml
 - **cargo-ci**
-   - github.yml
+   - github-compact.yml
+   - github-ubuntu.yml
+   - github-macos.yml
+   - github-windows.yml
+   - github-deploy.yml
    - .gitlab-ci.yml
 - **yarn-ci**
    - github.yml
