@@ -10,7 +10,8 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.github.compact", "github-compact.yml"),
     ("ci.github.ubuntu", "github-ubuntu.yml"),
     ("ci.github.macos", "github-macos.yml"),
-    ("ci.github.windows", "github-windows.yml")
+    ("ci.github.windows", "github-windows.yml"),
+    ("ci.github.deploy", "github-deploy.yml")
 ];
 
 pub(crate) struct Cargo;
@@ -47,6 +48,7 @@ impl Cargo {
             github.join(format!("{}-windows.yml", name)),
             "ci.github.windows",
         );
+        template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
         (template_files, vec![root, github])
     }
