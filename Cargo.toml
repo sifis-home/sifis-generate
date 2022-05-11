@@ -21,3 +21,13 @@ arg_enum_proc_macro = "0.3.2"
 lazy_static = "1.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+codegen-units = 1
+debug-assertions = false
+incremental = false
+lto = true
+opt-level = 3
+overflow-checks = false
+panic = "unwind"
+strip = "debuginfo"
