@@ -116,8 +116,9 @@ jobs:
 
     - name: Get total coverage
       run: |
-        grcov . --binary-path ./target/debug/ -t covdir -s . \
-              --token YOUR_COVDIR_TOKEN > covdir.json
+        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
+              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
+              --ignore "../*"  > covdir.json
 
     - name: Evaluate code coverage value
       shell: bash
