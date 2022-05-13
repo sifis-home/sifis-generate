@@ -177,6 +177,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Cache produced data
+      id: cache-data
       uses: actions/cache@v3
       with:
         path: |
@@ -196,6 +197,7 @@ jobs:
 
     # FIXME Use binaries
     - name: Install cargo-fuzz
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-fuzz
 
