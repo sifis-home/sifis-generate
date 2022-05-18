@@ -272,3 +272,59 @@ jobs:
         name: weighted-code-coverage-macos
         path: ~/wcc-output/out.json
 
+  dependency-check:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: Install nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+
+    - name: Install cargo-udeps
+      env:
+        UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
+        UDEPS_VERSION: v0.1.28
+      run: |
+        curl -L "$UDEPS_LINK/$UDEPS_VERSION/cargo-udeps-$UDEPS_VERSION-x86_64-apple-darwin.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 2
+
+    - name: Install cargo-deny
+      env:
+        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
+        DENY_VERSION: 0.12.0
+      run: |
+        curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-apple-darwin.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Install cargo-audit
+      env:
+        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
+        AUDIT_VERSION: v0.16.0
+      run: |
+        curl -L "$AUDIT_LINK$AUDIT_VERSION/cargo-audit-x86_64-apple-darwin-$AUDIT_VERSION.tgz" |
+        tar xzv -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Run cargo-udeps
+      run: |
+        cargo +nightly udeps --all-targets
+
+    - name: Run cargo-deny
+      run: |
+        cargo deny init
+        cargo deny check
+
+    - name: Run cargo-audit
+      run: |
+        cargo audit
