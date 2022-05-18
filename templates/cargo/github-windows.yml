@@ -205,3 +205,62 @@ jobs:
         name: weighted-code-coverage-windows
         path: ~/wcc-output/out.json
 
+  dependency-check:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: Install nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+
+    - name: Install cargo-udeps
+      env:
+        UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
+        UDEPS_VERSION: v0.1.28
+      run: |
+        $UDEPS_BINARY = "cargo-udeps-$Env:UDEPS_VERSION-x86_64-pc-windows-msvc.zip"
+        curl -LO "$Env:UDEPS_LINK/$Env:UDEPS_VERSION/$UDEPS_BINARY"
+        7z e -y "$UDEPS_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Install cargo-deny
+      env:
+        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
+        DENY_VERSION: 0.12.0
+      run: |
+        $DENY_BINARY = "cargo-deny-$Env:DENY_VERSION-x86_64-pc-windows-msvc.tar.gz"
+        curl -LO "$Env:DENY_LINK/$Env:DENY_VERSION/$DENY_BINARY"
+        tar xz -C "${env:USERPROFILE}\.cargo\bin" -f $DENY_BINARY --strip-components 1
+
+    - name: Install cargo-audit
+      env:
+        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
+        AUDIT_VERSION: v0.16.0
+      run: |
+        $AUDIT_BINARY = "cargo-audit-x86_64-pc-windows-msvc-$Env:AUDIT_VERSION.zip"
+        curl -LO "$Env:AUDIT_LINK$Env:AUDIT_VERSION/$AUDIT_BINARY"
+        7z e -y "$AUDIT_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Run cargo-udeps
+      run: |
+        cargo +nightly udeps --all-targets
+
+    - name: Run cargo-deny
+      run: |
+        cargo deny init
+        cargo deny check
+
+    - name: Run cargo-audit
+      run: |
+        cargo audit
