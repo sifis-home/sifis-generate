@@ -68,6 +68,10 @@ Some templates also produces files to configure the `Docker` environment.
    - github.yml
    - .gitlab-ci.yml
 
+## License
+
+Released under the [MIT License](LICENSE).
+
 ## Acknowledgements
 
 This software has been developed in the scope of the H2020 project SIFIS-Home with GA n. 952652.
