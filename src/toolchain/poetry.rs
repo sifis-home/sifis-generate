@@ -62,6 +62,7 @@ impl BuildTemplate for Poetry {
         &self,
         project_path: &Path,
         project_name: &str,
+        license: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -70,6 +71,7 @@ impl BuildTemplate for Poetry {
         let mut context = HashMap::new();
 
         context.insert("name", Value::from_serializable(&project_name));
+        context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Poetry::project_structure(project_path, project_name);
 

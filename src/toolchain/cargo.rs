@@ -6,6 +6,7 @@ use minijinja::value::Value;
 use crate::{builtin_templates, BuildTemplate};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
+    ("md.README", "README.md"),
     ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github.compact", "github-compact.yml"),
     ("ci.github.ubuntu", "github-ubuntu.yml"),
@@ -29,6 +30,9 @@ impl Cargo {
         let github = project_path.join(".github/workflows");
 
         let mut template_files = HashMap::new();
+
+        // README
+        template_files.insert(root.join("README.md"), "md.README");
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
@@ -59,6 +63,7 @@ impl BuildTemplate for Cargo {
         &self,
         project_path: &Path,
         project_name: &str,
+        license: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -67,6 +72,7 @@ impl BuildTemplate for Cargo {
         let mut context = HashMap::new();
 
         context.insert("name", Value::from_serializable(&project_name));
+        context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Cargo::project_structure(project_path, project_name);
 

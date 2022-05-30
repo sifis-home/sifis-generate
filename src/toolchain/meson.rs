@@ -19,6 +19,7 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("Dockerfile", "Dockerfile"),
     ("docker.compose", "docker-compose.yml"),
     ("run.tests", "run_tests.sh"),
+    ("md.README", "README.md"),
     ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
@@ -55,8 +56,10 @@ impl Meson {
         let github = project_path.join(".github/workflows");
 
         let mut template_files = HashMap::new();
+
         // All the files in the root of the projects
         template_files.insert(root.join(MESON_FILE), "build.root");
+        template_files.insert(root.join("README.md"), "md.README");
         template_files.insert(root.join("LICENSE"), "build.license");
 
         // All the files in the `cli/` directory of the project
@@ -90,6 +93,7 @@ impl BuildTemplate for Meson {
         &self,
         project_path: &Path,
         project_name: &str,
+        license: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -104,6 +108,7 @@ impl BuildTemplate for Meson {
         context.insert("name", Value::from_serializable(&project_name));
         context.insert("exe", Value::from_serializable(&ext));
         context.insert("params", Value::from_serializable(&params));
+        context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Meson::project_structure(project_path, project_name, ext);
 
