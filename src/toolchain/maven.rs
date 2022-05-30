@@ -9,6 +9,7 @@ static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
     ("java.entry", "Entry.java"),
     ("java.example", "Example.java"),
     ("xml.pom", "pom.xml"),
+    ("md.README", "README.md"),
     ("ci.github", "github.yml")
 ];
 
@@ -36,6 +37,7 @@ impl<'a> Maven<'a> {
 
         // All the files in the root of the projects
         template_files.insert(root.join("pom.xml"), "xml.pom");
+        template_files.insert(root.join("README.md"), "md.README");
         template_files.insert(root.join("LICENSE.md"), "build.license");
 
         // All files in the main directory
@@ -56,6 +58,7 @@ impl<'a> BuildTemplate for Maven<'a> {
         &self,
         project_path: &Path,
         project_name: &str,
+        license: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -66,6 +69,7 @@ impl<'a> BuildTemplate for Maven<'a> {
 
         context.insert("name", Value::from_serializable(&project_name));
         context.insert("group", Value::from_serializable(&self.0));
+        context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Maven::project_structure(project_path, group, project_name);
 

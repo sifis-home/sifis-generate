@@ -90,11 +90,7 @@ impl SifisTemplate {
         Ok(())
     }
 
-    fn add_license(&mut self, license: &str) -> anyhow::Result<()> {
-        let license = license
-            .parse::<&dyn license::License>()
-            .map_err(|_| anyhow::anyhow!("Cannot find License"))?;
-
+    fn add_license(&mut self, license: &dyn license::License) -> anyhow::Result<()> {
         let header = license.header();
         let text: Vec<&str> = license
             .text()
@@ -126,6 +122,7 @@ trait BuildTemplate {
         &self,
         project_path: &Path,
         project_name: &str,
+        license: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -134,8 +131,8 @@ trait BuildTemplate {
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
-    fn build(&self, project_path: &Path, project_name: &str) -> SifisTemplate {
-        let (files, dirs, context) = self.define(project_path, project_name);
+    fn build(&self, project_path: &Path, project_name: &str, license: &str) -> SifisTemplate {
+        let (files, dirs, context) = self.define(project_path, project_name, license);
         let source = build_source(Self::get_templates());
 
         SifisTemplate {
@@ -170,9 +167,17 @@ pub fn create_project(template_type: Templates, project_path: &Path, license: &s
         bail!("Impossible to get the project name");
     };
 
+    let license = license
+        .parse::<&dyn license::License>()
+        .map_err(|_| anyhow::anyhow!("Cannot find License"))?;
+
+    let id = license.id();
+
     let mut template = match template_type {
-        Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name),
-        Templates::MesonCpp => Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name),
+        Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name, id),
+        Templates::MesonCpp => {
+            Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name, id)
+        }
         Templates::Maven => {
             let (group, project_path, project_name) =
                 if let Some((group, name)) = project_name.rsplit_once('.') {
@@ -185,11 +190,11 @@ pub fn create_project(template_type: Templates, project_path: &Path, license: &s
                 } else {
                     bail!("Impossible to find Java group and name");
                 };
-            Maven::create(group).build(&project_path, project_name)
+            Maven::create(group).build(&project_path, project_name, id)
         }
-        Templates::CargoCI => Cargo::create_ci().build(project_path, project_name),
-        Templates::Poetry => Poetry::create().build(project_path, project_name),
-        Templates::YarnCI => Yarn::create_ci().build(project_path, project_name),
+        Templates::CargoCI => Cargo::create_ci().build(project_path, project_name, id),
+        Templates::Poetry => Poetry::create().build(project_path, project_name, id),
+        Templates::YarnCI => Yarn::create_ci().build(project_path, project_name, id),
     };
 
     template.add_license(license)?;
