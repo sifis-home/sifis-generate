@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use anyhow::{bail, Result};
 use minijinja::value::Value;
 
-use crate::{builtin_templates, BuildTemplate};
+use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
 
 static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
     ("java.entry", "Entry.java"),
@@ -16,11 +17,26 @@ static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
 const MAIN: &str = "main/java";
 const TESTS: &str = "test/java";
 
-pub(crate) struct Maven<'a>(&'a str);
+/// A maven project.
+pub struct Maven<'a>(&'a str);
 
 impl<'a> Maven<'a> {
-    pub(crate) fn create(group: &'a str) -> Self {
-        Self(group)
+    /// Creates a new maven project.
+    pub fn create_project(project_path: &Path, license: &str) -> Result<()> {
+        let (project_name, license) = define_name_and_license(project_path, license)?;
+        let (group, project_path, project_name) =
+            if let Some((group, name)) = project_name.rsplit_once('.') {
+                let parent = project_path.parent();
+                if let Some(parent) = parent {
+                    (group, parent.join(name), name)
+                } else {
+                    (group, Path::new(name).to_path_buf(), name)
+                }
+            } else {
+                bail!("Impossible to find Java group and name")
+            };
+        let template = Maven(group).build(&project_path, project_name, license.id());
+        compute_template(template, license)
     }
 
     fn project_structure(

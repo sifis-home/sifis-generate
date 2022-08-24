@@ -1,56 +1,18 @@
+pub mod toolchain;
+pub use toolchain::*;
+
 mod filters;
-mod toolchain;
 
 use std::collections::HashMap;
 use std::fs::{create_dir_all, write};
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Result};
-use arg_enum_proc_macro::ArgEnum;
 use minijinja::value::Value;
 use minijinja::{Environment, Source};
 use tracing::debug;
 
 use filters::*;
-use toolchain::*;
-
-/// Supported templates
-#[derive(ArgEnum, Debug)]
-pub enum Templates {
-    /// Generate a meson project using C as main language
-    #[arg_enum(name = "meson-c")]
-    MesonC,
-    /// Generate a meson project using C++ as main language
-    #[arg_enum(name = "meson-c++")]
-    MesonCpp,
-    /// Generate a pyproject.toml project using Python as main language
-    #[arg_enum(name = "poetry")]
-    Poetry,
-    /// Generate a maven project using Java as main language
-    #[arg_enum(name = "maven")]
-    Maven,
-    /// Generate a Github Action and Gitlab-CI setup for a cargo project
-    #[arg_enum(name = "cargo-ci")]
-    CargoCI,
-    /// Generate a Github Action and Gitlab-CI setup for a yarn project
-    #[arg_enum(name = "yarn-ci")]
-    YarnCI,
-}
-
-impl Templates {
-    pub fn info() -> String {
-        let mut info = "Available built-in templates:\n".to_string();
-        for (names, description) in Templates::descriptions() {
-            std::fmt::write(
-                &mut info,
-                format_args!("    {:<15} {}\n", names[0], description[0]),
-            )
-            .unwrap();
-        }
-
-        info
-    }
-}
 
 struct SifisTemplate {
     context: HashMap<&'static str, Value>,
@@ -155,8 +117,10 @@ fn build_source(templates: &[(&str, &str)]) -> Source {
     source
 }
 
-/// Creates a new project
-pub fn create_project(template_type: Templates, project_path: &Path, license: &str) -> Result<()> {
+pub(crate) fn define_name_and_license<'a>(
+    project_path: &'a Path,
+    license: &'a str,
+) -> Result<(&'a str, &'a dyn license::License)> {
     let project_name = if let Some(os_name) = project_path.file_name() {
         if let Some(name) = os_name.to_str() {
             name
@@ -171,32 +135,13 @@ pub fn create_project(template_type: Templates, project_path: &Path, license: &s
         .parse::<&dyn license::License>()
         .map_err(|_| anyhow::anyhow!("Cannot find License"))?;
 
-    let id = license.id();
+    Ok((project_name, license))
+}
 
-    let mut template = match template_type {
-        Templates::MesonC => Meson::with_kind(ProjectKind::C).build(project_path, project_name, id),
-        Templates::MesonCpp => {
-            Meson::with_kind(ProjectKind::Cxx).build(project_path, project_name, id)
-        }
-        Templates::Maven => {
-            let (group, project_path, project_name) =
-                if let Some((group, name)) = project_name.rsplit_once('.') {
-                    let parent = project_path.parent();
-                    if let Some(parent) = parent {
-                        (group, parent.join(name), name)
-                    } else {
-                        (group, Path::new(name).to_path_buf(), name)
-                    }
-                } else {
-                    bail!("Impossible to find Java group and name");
-                };
-            Maven::create(group).build(&project_path, project_name, id)
-        }
-        Templates::CargoCI => Cargo::create_ci().build(project_path, project_name, id),
-        Templates::Poetry => Poetry::create().build(project_path, project_name, id),
-        Templates::YarnCI => Yarn::create_ci().build(project_path, project_name, id),
-    };
-
+pub(crate) fn compute_template(
+    mut template: SifisTemplate,
+    license: &dyn license::License,
+) -> Result<()> {
     template.add_license(license)?;
 
     template.render()

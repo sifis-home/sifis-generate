@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, BuildTemplate};
+use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("md.README", "README.md"),
@@ -15,11 +16,15 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.github.deploy", "github-deploy.yml")
 ];
 
-pub(crate) struct Cargo;
+/// A cargo project data.
+pub struct Cargo;
 
 impl Cargo {
-    pub(crate) fn create_ci() -> Self {
-        Self
+    /// Creates a new CI for a cargo project.
+    pub fn create_ci(project_path: &Path, license: &str) -> Result<()> {
+        let (project_name, license) = define_name_and_license(project_path, license)?;
+        let template = Cargo.build(project_path, project_name, license.id());
+        compute_template(template, license)
     }
 
     fn project_structure(

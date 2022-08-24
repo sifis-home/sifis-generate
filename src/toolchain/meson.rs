@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, BuildTemplate};
+use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
 
 const MESON_FILE: &str = "meson.build";
 
@@ -24,24 +25,34 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("ci.github", "github.yml")
 ];
 
-#[derive(Debug)]
-pub(crate) enum ProjectKind {
+/// Kind of a meson project.
+#[derive(Debug, Clone)]
+pub enum ProjectKind {
     /// C-language project
     C,
     /// C++-language project
     Cxx,
 }
 
-pub(crate) struct Meson {
+/// A meson project data.
+pub struct Meson {
     kind: ProjectKind,
 }
 
 impl Meson {
-    pub(crate) fn with_kind(kind: ProjectKind) -> Meson {
-        Meson { kind }
+    /// Defines the kind of project for meson.
+    pub fn with_kind(kind: ProjectKind) -> Self {
+        Self { kind }
     }
 
-    /// Build a map Path <-> template
+    /// Creates a new meson project.
+    pub fn create_project(&self, project_path: &Path, license: &str) -> Result<()> {
+        let (project_name, license) = define_name_and_license(project_path, license)?;
+        let template = self.build(project_path, project_name, license.id());
+        compute_template(template, license)
+    }
+
+    // Build a map Path <-> template
     fn project_structure(
         project_path: &Path,
         name: &str,

@@ -1,6 +1,6 @@
 # sifis-generate
 
-This tool generates either a new project for some build systems or configuration
+This tool generates either new projects for some build systems or configuration
 files for some Continuous Integration with the use of templates.
 
 Templates define the layout for a project and allow developers to insert data
@@ -23,10 +23,44 @@ tests and implement further checks.
 
 ## Commands
 
-### new
+To see the list of supported commands, run: `sifis-generate --help`
+
+Each command has an optional argument to define a license. The default value
+for the license argument is `MIT`.
+
+### cargo
 
 ```
-$ sifis-generate new --template project-template project-name
+$ sifis-generate cargo [--license LICENSE] project-name
+```
+
+### maven
+
+```
+$ sifis-generate maven [--license LICENSE] project-group.project-name
+```
+
+### meson
+
+```
+$ sifis-generate meson [--kind meson-project-kind] [--license LICENSE] project-name
+```
+
+Admitted values for the `kind` argument:
+
+- `c`
+- `c++`
+
+### poetry
+
+```
+$ sifis-generate poetry [--license LICENSE] project-name
+```
+
+### yarn
+
+```
+$ sifis-generate yarn [--license LICENSE] project-name
 ```
 
 ## Project Templates

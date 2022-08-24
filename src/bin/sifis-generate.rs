@@ -2,7 +2,12 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
-use sifis_generate::{create_project, Templates};
+use sifis_generate::cargo::Cargo;
+use sifis_generate::maven::Maven;
+use sifis_generate::meson::{Meson, ProjectKind};
+use sifis_generate::poetry::Poetry;
+use sifis_generate::yarn::Yarn;
+
 use tracing_subscriber::EnvFilter;
 
 #[derive(Parser, Debug)]
@@ -14,31 +19,53 @@ struct Opts {
     cmd: Cmd,
 }
 
-fn from_id(id: &str) -> anyhow::Result<String> {
+fn from_id(id: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync + 'static>> {
     id.parse::<&dyn license::License>()
         .map(|_| id.to_owned())
-        .map_err(|_| anyhow::anyhow!("License not found"))
+        .map_err(|_| "License not found".into())
 }
 
-lazy_static::lazy_static! {
-    static ref TEMPLATES_INFO: String = Templates::info();
+#[derive(Parser, Debug)]
+struct CommonData {
+    /// License to be used in the project
+    #[clap(long, short, value_parser = from_id, default_value = "MIT")]
+    license: String,
+    /// Path to the new project
+    #[clap(value_hint = clap::ValueHint::DirPath)]
+    project_name: PathBuf,
+}
+
+#[derive(Parser, Debug)]
+struct MesonData {
+    /// Kind of a new meson project
+    #[clap(long, short, value_parser = project_kind, default_value = "c")]
+    kind: ProjectKind,
+    #[clap(flatten)]
+    common: CommonData,
+}
+
+fn project_kind(
+    s: &str,
+) -> Result<ProjectKind, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    match s {
+        "c" => Ok(ProjectKind::C),
+        "c++" => Ok(ProjectKind::Cxx),
+        _ => Err(format!("{} is not a valid meson project kind.", s).into()),
+    }
 }
 
 #[derive(Parser, Debug)]
 enum Cmd {
-    /// Create a new project
-    #[structopt(after_help = TEMPLATES_INFO.as_str())]
-    New {
-        /// License to be used in the project
-        #[structopt(long, short, parse(try_from_str = from_id), default_value = "MIT")]
-        license: String,
-        /// Name of a builtin template
-        #[structopt(long, short, possible_values = Templates::variants())]
-        template: Templates,
-        /// Path to the new project
-        #[structopt(parse(from_os_str))]
-        project_name: PathBuf,
-    },
+    /// Generate a CI for a cargo project.
+    Cargo(CommonData),
+    /// Generate a new maven project
+    Maven(CommonData),
+    /// Generate a new meson project
+    Meson(MesonData),
+    /// Generate a new poetry project.
+    Poetry(CommonData),
+    /// Generate a new yarn project.
+    Yarn(CommonData),
 }
 
 fn main() -> anyhow::Result<()> {
@@ -61,12 +88,11 @@ fn main() -> anyhow::Result<()> {
         .init();
 
     match opts.cmd {
-        Cmd::New {
-            template,
-            project_name,
-            license,
-        } => create_project(template, project_name.as_path(), &license)?,
+        Cmd::Cargo(data) => Cargo::create_ci(&data.project_name, &data.license),
+        Cmd::Maven(data) => Maven::create_project(&data.project_name, &data.license),
+        Cmd::Meson(data) => Meson::with_kind(data.kind)
+            .create_project(&data.common.project_name, &data.common.license),
+        Cmd::Poetry(data) => Poetry::create_project(&data.project_name, &data.license),
+        Cmd::Yarn(data) => Yarn::create_ci(&data.project_name, &data.license),
     }
-
-    Ok(())
 }

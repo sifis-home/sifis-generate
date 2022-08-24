@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, BuildTemplate};
+use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
 
 static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
     ("toml.pyproject", "pyproject.toml"),
@@ -16,11 +17,15 @@ static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
     ("ci.github", "github.yml")
 ];
 
-pub(crate) struct Poetry;
+/// A poetry project data.
+pub struct Poetry;
 
 impl Poetry {
-    pub(crate) fn create() -> Self {
-        Self
+    /// Creates a new poetry project.
+    pub fn create_project(project_path: &Path, license: &str) -> Result<()> {
+        let (project_name, license) = define_name_and_license(project_path, license)?;
+        let template = Poetry.build(project_path, project_name, license.id());
+        compute_template(template, license)
     }
 
     fn project_structure(

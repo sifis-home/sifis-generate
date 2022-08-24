@@ -4,12 +4,6 @@ pub mod meson;
 pub mod poetry;
 pub mod yarn;
 
-pub(crate) use cargo::*;
-pub(crate) use maven::*;
-pub(crate) use meson::*;
-pub(crate) use poetry::*;
-pub(crate) use yarn::*;
-
 #[macro_export]
 macro_rules! builtin_templates {
     ($root:expr => $(($name:expr, $template:expr)),+) => {
