@@ -17,9 +17,9 @@ pub struct Yarn;
 
 impl Yarn {
     /// Creates a new CI for a yarn project.
-    pub fn create_ci(project_path: &Path, license: &str) -> Result<()> {
+    pub fn create_ci(project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
         let (project_name, license) = define_name_and_license(project_path, license)?;
-        let template = Yarn.build(project_path, project_name, license.id());
+        let template = Yarn.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
     }
 
@@ -49,6 +49,7 @@ impl BuildTemplate for Yarn {
         project_path: &Path,
         project_name: &str,
         license: &str,
+        github_branch: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -57,6 +58,7 @@ impl BuildTemplate for Yarn {
         let mut context = HashMap::new();
 
         context.insert("name", Value::from_serializable(&project_name));
+        context.insert("branch", Value::from_serializable(&github_branch));
         context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Yarn::project_structure(project_path, project_name);

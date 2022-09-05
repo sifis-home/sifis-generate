@@ -1,6 +1,12 @@
 name: {{ name }}
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - {{ branch }}
+  pull_request:
+    branches:
+      - {{ branch }}
 
 jobs:
   workflow-steps:

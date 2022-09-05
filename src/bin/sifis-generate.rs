@@ -30,6 +30,9 @@ struct CommonData {
     /// License to be used in the project
     #[clap(long, short, value_parser = from_id, default_value = "MIT")]
     license: String,
+    /// GitHub branch name to be used in the project
+    #[clap(long = "branch", short = 'b', default_value = "main")]
+    github_branch: String,
     /// Path to the new project
     #[clap(value_hint = clap::ValueHint::DirPath)]
     project_name: PathBuf,
@@ -88,11 +91,20 @@ fn main() -> anyhow::Result<()> {
         .init();
 
     match opts.cmd {
-        Cmd::Cargo(data) => Cargo::create_ci(&data.project_name, &data.license),
-        Cmd::Maven(data) => Maven::create_project(&data.project_name, &data.license),
-        Cmd::Meson(data) => Meson::with_kind(data.kind)
-            .create_project(&data.common.project_name, &data.common.license),
-        Cmd::Poetry(data) => Poetry::create_project(&data.project_name, &data.license),
-        Cmd::Yarn(data) => Yarn::create_ci(&data.project_name, &data.license),
+        Cmd::Cargo(data) => {
+            Cargo::create_ci(&data.project_name, &data.license, &data.github_branch)
+        }
+        Cmd::Maven(data) => {
+            Maven::create_project(&data.project_name, &data.license, &data.github_branch)
+        }
+        Cmd::Meson(data) => Meson::with_kind(data.kind).create_project(
+            &data.common.project_name,
+            &data.common.license,
+            &data.common.github_branch,
+        ),
+        Cmd::Poetry(data) => {
+            Poetry::create_project(&data.project_name, &data.license, &data.github_branch)
+        }
+        Cmd::Yarn(data) => Yarn::create_ci(&data.project_name, &data.license, &data.github_branch),
     }
 }

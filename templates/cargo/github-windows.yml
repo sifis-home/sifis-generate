@@ -9,10 +9,10 @@ name: {{ name }}-windows
 on:
   push:
     branches:
-      - main
+      - {{ branch }}
   pull_request:
     branches:
-      - main
+      - {{ branch }}
 
 jobs:
   clippy-rustfmt:

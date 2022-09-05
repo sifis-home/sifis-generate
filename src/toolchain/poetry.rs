@@ -22,9 +22,9 @@ pub struct Poetry;
 
 impl Poetry {
     /// Creates a new poetry project.
-    pub fn create_project(project_path: &Path, license: &str) -> Result<()> {
+    pub fn create_project(project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
         let (project_name, license) = define_name_and_license(project_path, license)?;
-        let template = Poetry.build(project_path, project_name, license.id());
+        let template = Poetry.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
     }
 
@@ -68,6 +68,7 @@ impl BuildTemplate for Poetry {
         project_path: &Path,
         project_name: &str,
         license: &str,
+        github_branch: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -76,6 +77,7 @@ impl BuildTemplate for Poetry {
         let mut context = HashMap::new();
 
         context.insert("name", Value::from_serializable(&project_name));
+        context.insert("branch", Value::from_serializable(&github_branch));
         context.insert("license_id", Value::from_serializable(&license));
 
         let (files, dirs) = Poetry::project_structure(project_path, project_name);

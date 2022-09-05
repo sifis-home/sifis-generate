@@ -85,6 +85,7 @@ trait BuildTemplate {
         project_path: &Path,
         project_name: &str,
         license: &str,
+        github_branch: &str,
     ) -> (
         HashMap<PathBuf, &'static str>,
         Vec<PathBuf>,
@@ -93,8 +94,15 @@ trait BuildTemplate {
 
     fn get_templates() -> &'static [(&'static str, &'static str)];
 
-    fn build(&self, project_path: &Path, project_name: &str, license: &str) -> SifisTemplate {
-        let (files, dirs, context) = self.define(project_path, project_name, license);
+    fn build(
+        &self,
+        project_path: &Path,
+        project_name: &str,
+        license: &str,
+        github_branch: &str,
+    ) -> SifisTemplate {
+        let (files, dirs, context) =
+            self.define(project_path, project_name, license, github_branch);
         let source = build_source(Self::get_templates());
 
         SifisTemplate {
