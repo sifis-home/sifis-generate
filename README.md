@@ -37,7 +37,7 @@ $ sifis-generate cargo [--license LICENSE] project-name
 ### maven
 
 ```
-$ sifis-generate maven [--license LICENSE] project-group.project-name
+$ sifis-generate maven [--license LICENSE] project-group project-name
 ```
 
 ### meson

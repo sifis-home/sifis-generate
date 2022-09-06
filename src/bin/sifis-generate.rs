@@ -47,6 +47,14 @@ struct MesonData {
     common: CommonData,
 }
 
+#[derive(Parser, Debug)]
+struct MavenData {
+    /// Java group.
+    group: String,
+    #[clap(flatten)]
+    common: CommonData,
+}
+
 fn project_kind(
     s: &str,
 ) -> Result<ProjectKind, Box<dyn std::error::Error + Send + Sync + 'static>> {
@@ -62,7 +70,7 @@ enum Cmd {
     /// Generate a CI for a cargo project.
     Cargo(CommonData),
     /// Generate a new maven project
-    Maven(CommonData),
+    Maven(MavenData),
     /// Generate a new meson project
     Meson(MesonData),
     /// Generate a new poetry project.
@@ -94,9 +102,11 @@ fn main() -> anyhow::Result<()> {
         Cmd::Cargo(data) => {
             Cargo::create_ci(&data.project_name, &data.license, &data.github_branch)
         }
-        Cmd::Maven(data) => {
-            Maven::create_project(&data.project_name, &data.license, &data.github_branch)
-        }
+        Cmd::Maven(data) => Maven::new(&data.group).create_project(
+            &data.common.project_name,
+            &data.common.license,
+            &data.common.github_branch,
+        ),
         Cmd::Meson(data) => Meson::with_kind(data.kind).create_project(
             &data.common.project_name,
             &data.common.license,
