@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
+use crate::{
+    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateProject,
+};
 
 const MESON_FILE: &str = "meson.build";
 
@@ -35,18 +37,10 @@ pub enum ProjectKind {
 }
 
 /// A meson project data.
-pub struct Meson {
-    kind: ProjectKind,
-}
+pub struct Meson(ProjectKind);
 
-impl Meson {
-    /// Defines the kind of project for meson.
-    pub fn with_kind(kind: ProjectKind) -> Self {
-        Self { kind }
-    }
-
-    /// Creates a new meson project.
-    pub fn create_project(
+impl CreateProject for Meson {
+    fn create_project(
         &self,
         project_path: &Path,
         license: &str,
@@ -55,6 +49,13 @@ impl Meson {
         let (project_name, license) = define_name_and_license(project_path, license)?;
         let template = self.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
+    }
+}
+
+impl Meson {
+    /// Creates a new `Meson` instance.
+    pub fn new(kind: ProjectKind) -> Self {
+        Self(kind)
     }
 
     // Build a map Path <-> template
@@ -117,7 +118,7 @@ impl BuildTemplate for Meson {
         HashMap<&'static str, Value>,
     ) {
         let mut context = HashMap::new();
-        let (ext, params) = match self.kind {
+        let (ext, params) = match self.0 {
             ProjectKind::C => ("c", "c_std=c99"),
             ProjectKind::Cxx => ("cpp", "cpp_std=c++11"),
         };

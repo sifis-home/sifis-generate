@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
+use crate::{
+    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateProject,
+};
 
 static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
     ("toml.pyproject", "pyproject.toml"),
@@ -18,14 +20,26 @@ static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
 ];
 
 /// A poetry project data.
+#[derive(Default)]
 pub struct Poetry;
 
-impl Poetry {
-    /// Creates a new poetry project.
-    pub fn create_project(project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
+impl CreateProject for Poetry {
+    fn create_project(
+        &self,
+        project_path: &Path,
+        license: &str,
+        github_branch: &str,
+    ) -> Result<()> {
         let (project_name, license) = define_name_and_license(project_path, license)?;
-        let template = Poetry.build(project_path, project_name, license.id(), github_branch);
+        let template = self.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
+    }
+}
+
+impl Poetry {
+    /// Creates a new `Poetry` instance.
+    pub fn new() -> Self {
+        Self::default()
     }
 
     fn project_structure(

@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
+use crate::{
+    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateCi,
+};
 
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("md.README", "README.md"),
@@ -17,14 +19,21 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
 ];
 
 /// A cargo project data.
+#[derive(Default)]
 pub struct Cargo;
 
-impl Cargo {
-    /// Creates a new CI for a cargo project.
-    pub fn create_ci(project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
+impl CreateCi for Cargo {
+    fn create_ci(&self, project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
         let (project_name, license) = define_name_and_license(project_path, license)?;
-        let template = Cargo.build(project_path, project_name, license.id(), github_branch);
+        let template = self.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
+    }
+}
+
+impl Cargo {
+    /// Creates a new `Cargo` instance.
+    pub fn new() -> Self {
+        Self::default()
     }
 
     fn project_structure(

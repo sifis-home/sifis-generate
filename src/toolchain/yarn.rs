@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
+use crate::{
+    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateCi,
+};
 
 static YARN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["yarn" =>
     ("md.README", "README.md"),
@@ -13,14 +15,21 @@ static YARN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["yarn" =>
 ];
 
 /// A yarn project data.
+#[derive(Default)]
 pub struct Yarn;
 
-impl Yarn {
-    /// Creates a new CI for a yarn project.
-    pub fn create_ci(project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
+impl CreateCi for Yarn {
+    fn create_ci(&self, project_path: &Path, license: &str, github_branch: &str) -> Result<()> {
         let (project_name, license) = define_name_and_license(project_path, license)?;
         let template = Yarn.build(project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
+    }
+}
+
+impl Yarn {
+    /// Creates a new `Yarn` instance.
+    pub fn new() -> Self {
+        Self::default()
     }
 
     fn project_structure(

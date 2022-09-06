@@ -14,6 +14,19 @@ use tracing::debug;
 
 use filters::*;
 
+/// Used to create a CI configuration for a project.
+pub trait CreateCi {
+    /// Creates a new CI configuration for a project.
+    fn create_ci(&self, project_path: &Path, license: &str, github_branch: &str) -> Result<()>;
+}
+
+/// Used to create a new project.
+pub trait CreateProject {
+    /// Creates a new project.
+    fn create_project(&self, project_path: &Path, license: &str, github_branch: &str)
+        -> Result<()>;
+}
+
 struct SifisTemplate {
     context: HashMap<&'static str, Value>,
     files: HashMap<PathBuf, &'static str>,

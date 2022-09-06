@@ -4,7 +4,9 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use minijinja::value::Value;
 
-use crate::{builtin_templates, compute_template, define_name_and_license, BuildTemplate};
+use crate::{
+    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateProject,
+};
 
 static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
     ("java.entry", "Entry.java"),
@@ -20,14 +22,8 @@ const TESTS: &str = "test/java";
 /// A maven project.
 pub struct Maven<'a>(&'a str);
 
-impl<'a> Maven<'a> {
-    /// Creates a new `Maven` instance.
-    pub fn new(group: &'a str) -> Self {
-        Self(group)
-    }
-
-    /// Creates a new maven project.
-    pub fn create_project(
+impl<'a> CreateProject for Maven<'a> {
+    fn create_project(
         &self,
         project_path: &Path,
         license: &str,
@@ -41,6 +37,13 @@ impl<'a> Maven<'a> {
         };
         let template = self.build(&project_path, project_name, license.id(), github_branch);
         compute_template(template, license)
+    }
+}
+
+impl<'a> Maven<'a> {
+    /// Creates a new `Maven` instance.
+    pub fn new(group: &'a str) -> Self {
+        Self(group)
     }
 
     fn project_structure(

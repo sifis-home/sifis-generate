@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+use sifis_generate::{CreateCi, CreateProject};
+
 use sifis_generate::cargo::Cargo;
 use sifis_generate::maven::Maven;
 use sifis_generate::meson::{Meson, ProjectKind};
@@ -100,21 +102,23 @@ fn main() -> anyhow::Result<()> {
 
     match opts.cmd {
         Cmd::Cargo(data) => {
-            Cargo::create_ci(&data.project_name, &data.license, &data.github_branch)
+            Cargo::new().create_ci(&data.project_name, &data.license, &data.github_branch)
         }
         Cmd::Maven(data) => Maven::new(&data.group).create_project(
             &data.common.project_name,
             &data.common.license,
             &data.common.github_branch,
         ),
-        Cmd::Meson(data) => Meson::with_kind(data.kind).create_project(
+        Cmd::Meson(data) => Meson::new(data.kind).create_project(
             &data.common.project_name,
             &data.common.license,
             &data.common.github_branch,
         ),
         Cmd::Poetry(data) => {
-            Poetry::create_project(&data.project_name, &data.license, &data.github_branch)
+            Poetry::new().create_project(&data.project_name, &data.license, &data.github_branch)
         }
-        Cmd::Yarn(data) => Yarn::create_ci(&data.project_name, &data.license, &data.github_branch),
+        Cmd::Yarn(data) => {
+            Yarn::new().create_ci(&data.project_name, &data.license, &data.github_branch)
+        }
     }
 }
