@@ -17,14 +17,25 @@ use filters::*;
 /// Used to create a CI configuration for a project.
 pub trait CreateCi {
     /// Creates a new CI configuration for a project.
-    fn create_ci(&self, project_path: &Path, license: &str, github_branch: &str) -> Result<()>;
+    fn create_ci(
+        &self,
+        project_name: &str,
+        project_path: &Path,
+        license: &str,
+        github_branch: &str,
+    ) -> Result<()>;
 }
 
 /// Used to create a new project.
 pub trait CreateProject {
     /// Creates a new project.
-    fn create_project(&self, project_path: &Path, license: &str, github_branch: &str)
-        -> Result<()>;
+    fn create_project(
+        &self,
+        project_name: &str,
+        project_path: &Path,
+        license: &str,
+        github_branch: &str,
+    ) -> Result<()>;
 }
 
 struct SifisTemplate {
@@ -138,25 +149,29 @@ fn build_source(templates: &[(&str, &str)]) -> Source {
     source
 }
 
-pub(crate) fn define_name_and_license<'a>(
-    project_path: &'a Path,
-    license: &'a str,
-) -> Result<(&'a str, &'a dyn license::License)> {
-    let project_name = if let Some(os_name) = project_path.file_name() {
-        if let Some(name) = os_name.to_str() {
-            name
+pub(crate) fn define_name<'a>(project_name: &'a str, project_path: &'a Path) -> Result<&'a str> {
+    let project_name = if project_name.is_empty() {
+        if let Some(os_name) = project_path.file_name() {
+            if let Some(name) = os_name.to_str() {
+                name
+            } else {
+                bail!("Impossible to convert the project name into a valid Unicode string");
+            }
         } else {
-            bail!("Impossible to convert the project name into a valid Unicode string");
+            bail!("Impossible to get the project name");
         }
     } else {
-        bail!("Impossible to get the project name");
+        project_name
     };
 
+    Ok(project_name)
+}
+
+pub(crate) fn define_license(license: &str) -> Result<&dyn license::License> {
     let license = license
         .parse::<&dyn license::License>()
         .map_err(|_| anyhow::anyhow!("Cannot find License"))?;
-
-    Ok((project_name, license))
+    Ok(license)
 }
 
 pub(crate) fn compute_template(

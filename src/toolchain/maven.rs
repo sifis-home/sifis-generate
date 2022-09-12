@@ -5,7 +5,7 @@ use anyhow::Result;
 use minijinja::value::Value;
 
 use crate::{
-    builtin_templates, compute_template, define_name_and_license, BuildTemplate, CreateProject,
+    builtin_templates, compute_template, define_license, define_name, BuildTemplate, CreateProject,
 };
 
 static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
@@ -25,11 +25,13 @@ pub struct Maven<'a>(&'a str);
 impl<'a> CreateProject for Maven<'a> {
     fn create_project(
         &self,
+        project_name: &str,
         project_path: &Path,
         license: &str,
         github_branch: &str,
     ) -> Result<()> {
-        let (project_name, license) = define_name_and_license(project_path, license)?;
+        let project_name = define_name(project_name, project_path)?;
+        let license = define_license(license)?;
         let (project_path, project_name) = if let Some(parent) = project_path.parent() {
             (parent.join(project_name), project_name)
         } else {
