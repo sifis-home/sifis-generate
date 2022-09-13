@@ -25,25 +25,26 @@ tests and implement further checks.
 
 To see the list of supported commands, run: `sifis-generate --help`
 
-Each command has an optional argument to define a license. The default value
-for the license argument is `MIT`.
+Each command has an optional argument to define a license and an optional argument to
+ override the project name instead of using the last component of the project-path.
+ The default value for the license argument is `MIT`.
 
 ### cargo
 
 ```
-$ sifis-generate cargo [--license LICENSE] project-name
+$ sifis-generate cargo [--license LICENSE --project-name NAME] project-path
 ```
 
 ### maven
 
 ```
-$ sifis-generate maven [--license LICENSE] project-group project-name
+$ sifis-generate maven [--license LICENSE --project-name NAME] project-group project-path
 ```
 
 ### meson
 
 ```
-$ sifis-generate meson [--kind meson-project-kind] [--license LICENSE] project-name
+$ sifis-generate meson [--kind meson-project-kind] [--license LICENSE --project-name NAME] project-path
 ```
 
 Admitted values for the `kind` argument:
@@ -54,13 +55,13 @@ Admitted values for the `kind` argument:
 ### poetry
 
 ```
-$ sifis-generate poetry [--license LICENSE] project-name
+$ sifis-generate poetry [--license LICENSE --project-name NAME] project-path
 ```
 
 ### yarn
 
 ```
-$ sifis-generate yarn [--license LICENSE] project-name
+$ sifis-generate yarn [--license LICENSE --project-name NAME] project-path
 ```
 
 ## Project Templates
