@@ -32,19 +32,19 @@ Each command has an optional argument to define a license and an optional argume
 ### cargo
 
 ```
-$ sifis-generate cargo [--license LICENSE --project-name NAME] project-path
+$ sifis-generate cargo [--license LICENSE --project-name NAME --branch GITHUB_BRANCH] project-path
 ```
 
 ### maven
 
 ```
-$ sifis-generate maven [--license LICENSE --project-name NAME] project-group project-path
+$ sifis-generate maven [--license LICENSE --project-name NAME --branch GITHUB_BRANCH] project-group project-path
 ```
 
 ### meson
 
 ```
-$ sifis-generate meson [--kind meson-project-kind] [--license LICENSE --project-name NAME] project-path
+$ sifis-generate meson [--kind meson-project-kind] [--license LICENSE --project-name NAME --branch GITHUB_BRANCH] project-path
 ```
 
 Admitted values for the `kind` argument:
@@ -55,13 +55,13 @@ Admitted values for the `kind` argument:
 ### poetry
 
 ```
-$ sifis-generate poetry [--license LICENSE --project-name NAME] project-path
+$ sifis-generate poetry [--license LICENSE --project-name NAME --branch GITHUB_BRANCH] project-path
 ```
 
 ### yarn
 
 ```
-$ sifis-generate yarn [--license LICENSE --project-name NAME] project-path
+$ sifis-generate yarn [--license LICENSE --project-name NAME --branch GITHUB_BRANCH] project-path
 ```
 
 ## Project Templates
