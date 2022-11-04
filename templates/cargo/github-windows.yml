@@ -91,12 +91,6 @@ jobs:
         components: miri
         override: true
 
-    # FIXME Use binaries
-    - name: Install cargo-fuzz
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-fuzz
-
     - name: Run miri
       env:
         # -Zrandomize-layout makes sure not to rely on the layout of anything
