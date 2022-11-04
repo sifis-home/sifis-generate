@@ -1,3 +1,6 @@
+# - valgrind cannot be installed on Windows, only on linux
+# - cargo-fuzz and AddressSanitizer are not supported on Windows
+
 name: memory-checks-windows
 
 on:

@@ -1,3 +1,5 @@
+# - valgrind cannot be installed on macos, only on linux
+
 name: memory-checks-macos
 
 on:

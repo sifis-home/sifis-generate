@@ -1,5 +1,4 @@
 #FIXME
-# - valgrind cannot be installed on macos, only on linux
 # - rust-code-analysis is not tested on macos, so no static analysis
 
 name: {{ name }}-macos
