@@ -15,6 +15,9 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.github.ubuntu", "github-ubuntu.yml"),
     ("ci.github.macos", "github-macos.yml"),
     ("ci.github.windows", "github-windows.yml"),
+    ("ci.memory.checks.ubuntu", "memory-checks-ubuntu.yml"),
+    ("ci.memory.checks.macos", "memory-checks-macos.yml"),
+    ("ci.memory.checks.windows", "memory-checks-windows.yml"),
     ("ci.github.deploy", "github-deploy.yml")
 ];
 
@@ -69,6 +72,18 @@ impl Cargo {
         template_files.insert(
             github.join(format!("{}-windows.yml", name)),
             "ci.github.windows",
+        );
+        template_files.insert(
+            github.join("memory-checks-ubuntu.yml"),
+            "ci.memory.checks.ubuntu",
+        );
+        template_files.insert(
+            github.join("memory-checks-macos.yml"),
+            "ci.memory.checks.macos",
+        );
+        template_files.insert(
+            github.join("memory-checks-windows.yml"),
+            "ci.memory.checks.windows",
         );
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 

@@ -1,0 +1,46 @@
+name: memory-checks-windows
+
+on:
+  push:
+    branches:
+      - {{ branch }}
+  pull_request:
+    branches:
+      - {{ branch }}
+
+jobs:
+  undefined-behaviour-dynamic-analysis:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
+    - name: Install Rust nightly and miri
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: nightly
+        components: miri
+        override: true
+
+    - name: Run miri
+      env:
+        # -Zrandomize-layout makes sure not to rely on the layout of anything
+        # that might change
+        RUSTFLAGS: -Zrandomize-layout
+        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
+        MIRIFLAGS: >
+          -Zmiri-symbolic-alignment-check
+      run: cargo miri test
