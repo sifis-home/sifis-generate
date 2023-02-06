@@ -79,7 +79,6 @@ impl Meson {
         // All the files in the root of the projects
         template_files.insert(root.join(MESON_FILE), "build.root");
         template_files.insert(root.join("README.md"), "md.README");
-        template_files.insert(root.join("LICENSE"), "build.license");
 
         // All the files in the `cli/` directory of the project
         template_files.insert(cli.join(MESON_FILE), "build.cli");

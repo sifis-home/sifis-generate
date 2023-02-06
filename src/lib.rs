@@ -79,27 +79,39 @@ impl SifisTemplate {
         Ok(())
     }
 
-    fn add_license(&mut self, license: &dyn license::License) -> anyhow::Result<()> {
+    fn add_license(
+        &mut self,
+        license: &dyn license::License,
+        project_path: &Path,
+    ) -> anyhow::Result<()> {
+        self.files
+            .insert(project_path.join("LICENSE"), "build.license");
+
         let header = license.header();
-        let text: Vec<&str> = license
+        let complete_text: Vec<&str> = license
             .text()
             .lines()
             .skip(2) // Skip a blank line and license id
-            .filter(|&x| !x.is_empty())
             .collect();
+        let text_without_blank: Vec<&str> = complete_text
+            .iter()
+            .filter(|x| !x.is_empty())
+            .copied()
+            .collect();
+
         let id = license.id();
 
         let mut license = HashMap::new();
 
         license.insert("header", Value::from_serializable(&header));
-        license.insert("text", Value::from_serializable(&text));
+        license.insert("text", Value::from_serializable(&text_without_blank));
         license.insert("id", Value::from_serializable(&id));
 
         self.context
             .insert("license", Value::from_serializable(&license));
 
         self.source
-            .add_template("build.license", "{{ license.text }}")?;
+            .add_template("build.license", complete_text.join("\n"))?;
 
         Ok(())
     }
@@ -210,7 +222,7 @@ pub(crate) fn compute_template(
     project_path: &Path,
 ) -> Result<()> {
     template.add_reuse(license, project_path)?;
-    template.add_license(license)?;
+    template.add_license(license, project_path)?;
 
     template.render()
 }
