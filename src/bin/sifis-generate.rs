@@ -66,7 +66,7 @@ fn project_kind(
     match s {
         "c" => Ok(ProjectKind::C),
         "c++" => Ok(ProjectKind::Cxx),
-        _ => Err(format!("{} is not a valid meson project kind.", s).into()),
+        _ => Err(format!("{s} is not a valid meson project kind.").into()),
     }
 }
 

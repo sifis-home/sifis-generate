@@ -8,7 +8,7 @@ pub(crate) fn comment_license(
     value: String,
     comment_char: String,
 ) -> Result<String, Error> {
-    let sep = &format!("{} ", comment_char);
+    let sep = &format!("{comment_char} ");
     Ok(wrap(
         &value,
         Options::new(LINE_WIDTH)

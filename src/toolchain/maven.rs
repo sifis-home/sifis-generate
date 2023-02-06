@@ -54,8 +54,8 @@ impl<'a> Maven<'a> {
         name: &str,
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
         let root = project_path.to_path_buf();
-        let main = project_path.join(format!("src/{}/{}/{}", MAIN, group, name));
-        let tests = project_path.join(format!("src/{}/{}/{}/example", TESTS, group, name));
+        let main = project_path.join(format!("src/{MAIN}/{group}/{name}"));
+        let tests = project_path.join(format!("src/{TESTS}/{group}/{name}/example"));
         let github = project_path.join(".github/workflows");
 
         let mut template_files = HashMap::new();
@@ -72,7 +72,7 @@ impl<'a> Maven<'a> {
         template_files.insert(tests.join("Example.java"), "java.example");
 
         // Continuous integration files
-        template_files.insert(github.join(format!("{}.yml", name)), "ci.github");
+        template_files.insert(github.join(format!("{name}.yml")), "ci.github");
 
         (template_files, vec![root, main, tests, github])
     }

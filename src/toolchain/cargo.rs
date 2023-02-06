@@ -60,17 +60,17 @@ impl Cargo {
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
-        template_files.insert(github.join(format!("{}.yml", name)), "ci.github.compact");
+        template_files.insert(github.join(format!("{name}.yml")), "ci.github.compact");
         template_files.insert(
-            github.join(format!("{}-ubuntu.yml", name)),
+            github.join(format!("{name}-ubuntu.yml")),
             "ci.github.ubuntu",
         );
         template_files.insert(
-            github.join(format!("{}-macos.yml", name)),
+            github.join(format!("{name}-macos.yml")),
             "ci.github.macos",
         );
         template_files.insert(
-            github.join(format!("{}-windows.yml", name)),
+            github.join(format!("{name}-windows.yml")),
             "ci.github.windows",
         );
         template_files.insert(
