@@ -65,10 +65,7 @@ impl Cargo {
             github.join(format!("{name}-ubuntu.yml")),
             "ci.github.ubuntu",
         );
-        template_files.insert(
-            github.join(format!("{name}-macos.yml")),
-            "ci.github.macos",
-        );
+        template_files.insert(github.join(format!("{name}-macos.yml")), "ci.github.macos");
         template_files.insert(
             github.join(format!("{name}-windows.yml")),
             "ci.github.windows",
