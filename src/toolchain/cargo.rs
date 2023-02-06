@@ -36,7 +36,7 @@ impl CreateCi for Cargo {
         let project_name = define_name(project_name, project_path)?;
         let license = define_license(license)?;
         let template = self.build(project_path, project_name, license.id(), github_branch);
-        compute_template(template, license)
+        compute_template(template, license, project_path)
     }
 }
 

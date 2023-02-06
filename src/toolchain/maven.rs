@@ -38,7 +38,7 @@ impl<'a> CreateProject for Maven<'a> {
             (Path::new(project_name).to_path_buf(), project_name)
         };
         let template = self.build(&project_path, project_name, license.id(), github_branch);
-        compute_template(template, license)
+        compute_template(template, license, &project_path)
     }
 }
 

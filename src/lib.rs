@@ -14,6 +14,9 @@ use tracing::debug;
 
 use filters::*;
 
+static REUSE_TEMPLATE: &str =
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/", "dep5"));
+
 /// Used to create a CI configuration for a project.
 pub trait CreateCi {
     /// Creates a new CI configuration for a project.
@@ -100,6 +103,33 @@ impl SifisTemplate {
 
         Ok(())
     }
+
+    fn add_reuse(
+        &mut self,
+        license: &dyn license::License,
+        project_path: &Path,
+    ) -> anyhow::Result<()> {
+        // Adds .reuse directory and dep5 file
+        let reuse_path = project_path.join(".reuse");
+        self.files.insert(reuse_path.join("dep5"), "dep5.reuse");
+        self.dirs.push(reuse_path);
+
+        // Gets project name and license header
+        let name = self.context.get("name");
+        let id = license.id();
+
+        let mut reuse = HashMap::new();
+
+        reuse.insert("name", Value::from_serializable(&name));
+        reuse.insert("id", Value::from_serializable(&id));
+
+        self.context
+            .insert("reuse", Value::from_serializable(&reuse));
+
+        self.source.add_template("dep5.reuse", REUSE_TEMPLATE)?;
+
+        Ok(())
+    }
 }
 
 /// Build a template
@@ -177,7 +207,9 @@ pub(crate) fn define_license(license: &str) -> Result<&dyn license::License> {
 pub(crate) fn compute_template(
     mut template: SifisTemplate,
     license: &dyn license::License,
+    project_path: &Path,
 ) -> Result<()> {
+    template.add_reuse(license, project_path)?;
     template.add_license(license)?;
 
     template.render()
