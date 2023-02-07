@@ -80,7 +80,7 @@ jobs:
 
 ################################## UBUNTU ##################################
 
-  code-coverage:
+  code-coverage-ubuntu:
 
     needs: build-test
 
@@ -163,7 +163,7 @@ jobs:
             exit 1
         fi
 
-  static-code-analysis:
+  static-code-analysis-ubuntu:
 
     needs: build-test
 
@@ -194,7 +194,7 @@ jobs:
         name: rca-json-ubuntu
         path: ~/rca-json
 
-  weighted-code-coverage:
+  weighted-code-coverage-ubuntu:
 
     needs: build-test
 
@@ -259,7 +259,7 @@ jobs:
         name: weighted-code-coverage-ubuntu
         path: ~/wcc-output/out.json
 
-  dependency-check:
+  dependency-check-ubuntu:
 
     needs: build-test
 
@@ -319,9 +319,9 @@ jobs:
       run: |
         cargo audit
 
-  memory-and-threads-dynamic-analysis:
+  fuzzy-ubuntu:
 
-    needs: [code-coverage, static-code-analysis, weighted-code-coverage, dependency-check]
+    needs: [code-coverage-ubuntu, static-code-analysis-ubuntu, weighted-code-coverage-ubuntu, dependency-check-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -333,30 +333,6 @@ jobs:
       with:
         toolchain: stable
         override: true
-
-    - name: Install valgrind
-      run: |
-        sudo apt-get install valgrind
-
-    # FIXME Use binaries
-    - name: Install cargo-valgrind
-      run: |
-        cargo install cargo-valgrind
-
-    # Usage of the `help` command as base command, please replace it
-    # with the effective command that valgrind has to analyze
-    - name: Run cargo-valgrind
-      run: |
-        cargo valgrind run -- --help
-
-  undefined-behaviour-fuzzy-dynamic-analysis:
-
-    needs: [code-coverage, static-code-analysis, weighted-code-coverage, dependency-check]
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
 
     - name: Cache produced data
       id: cache-data
@@ -370,20 +346,73 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install Rust nightly and miri
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: nightly
-        components: miri, rust-src
-        override: true
-
     # FIXME Use binaries
     - name: Install cargo-fuzz
       if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-fuzz
 
+    # FIXME Create a template with a dummy series of fuzzy tests
+    - name: Init cargo-fuzz
+      run: cargo fuzz init
+
+    - name: Run cargo-fuzz
+      run: cargo fuzz build
+
+  unsafe-checks-ubuntu:
+
+    needs: fuzzy-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install cargo-geiger
+      run: |
+        cargo install cargo-geiger
+
+    - name: Run cargo-geiger
+      id: geiger
+      run: |
+        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
+        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
+        echo "::set-output name=result::$EXIT_CODE"
+
+    - name: Install valgrind
+      if: steps.geiger.outputs.result != '0'
+      run: |
+        sudo apt-get install valgrind
+
+    # FIXME Use binaries
+    - name: Install cargo-valgrind
+      if: steps.geiger.outputs.result != '0'
+      run: |
+        cargo install cargo-valgrind
+
+    # Usage of the `help` command as base command, please replace it
+    # with the effective command that valgrind has to analyze
+    - name: Run cargo-valgrind
+      if: steps.geiger.outputs.result != '0'
+      run: |
+        cargo valgrind run -- --help
+
+    - name: Install Rust nightly and miri
+      if: steps.geiger.outputs.result != '0'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: nightly
+        components: miri, rust-src
+        override: true
+
     - name: Run miri
+      if: steps.geiger.outputs.result != '0'
       env:
         # -Zrandomize-layout makes sure not to rely on the layout of anything
         # that might change
@@ -393,14 +422,8 @@ jobs:
           -Zmiri-symbolic-alignment-check
       run: cargo miri test
 
-    # FIXME Create a template with a dummy series of fuzzy tests
-    - name: Init cargo-fuzz
-      run: cargo fuzz init
-
-    - name: Run cargo-fuzz
-      run: cargo fuzz build
-
     - name: Run AddressSanitizer
+      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -410,9 +433,10 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-unknown-linux-gnu -- --help
 
+
 ################################## MACOS ##################################
 
-  code-coverage:
+  code-coverage-macos:
 
     needs: build-test
 
@@ -495,7 +519,7 @@ jobs:
             exit 1
         fi
 
-  weighted-code-coverage:
+  weighted-code-coverage-macos:
 
     needs: build-test
 
@@ -560,7 +584,7 @@ jobs:
         name: weighted-code-coverage-macos
         path: ~/wcc-output/out.json
 
-  dependency-check:
+  dependency-check-macos:
 
     needs: build-test
 
@@ -620,15 +644,20 @@ jobs:
       run: |
         cargo audit
 
-  # Valgrind cannot be installed on macos, only on linux
-  undefined-behaviour-fuzzy-dynamic-analysis:
+  fuzzy-macos:
 
-    needs: [code-coverage, weighted-code-coverage, dependency-check]
+    needs: [code-coverage-macos, weighted-code-coverage-macos, dependency-check-macos]
 
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        override: true
 
     - name: Cache produced data
       id: cache-data
@@ -642,20 +671,50 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install Rust nightly and miri
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: nightly
-        components: miri, rust-src
-        override: true
-
     # FIXME Use binaries
     - name: Install cargo-fuzz
       if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-fuzz
 
+    # FIXME Create a template with a dummy series of fuzzy tests
+    - name: Init cargo-fuzz
+      run: cargo fuzz init
+
+    - name: Run cargo-fuzz
+      run: cargo fuzz build
+
+  # Valgrind cannot be installed on macos, only on linux
+  unsafe-checks-macos:
+
+    needs: fuzzy-macos
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install cargo-geiger
+      run: |
+        cargo install cargo-geiger
+
+    - name: Run cargo-geiger
+      id: geiger
+      run: |
+        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
+        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
+        echo "::set-output name=result::$EXIT_CODE"
+
+    - name: Install Rust nightly and miri
+      if: steps.geiger.outputs.result != '0'
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: nightly
+        components: miri, rust-src
+        override: true
+
     - name: Run miri
+      if: steps.geiger.outputs.result != '0'
       env:
         # -Zrandomize-layout makes sure not to rely on the layout of anything
         # that might change
@@ -665,16 +724,10 @@ jobs:
           -Zmiri-symbolic-alignment-check
       run: cargo miri test
 
-    # FIXME Create a template with a dummy series of fuzzy tests
-    - name: Init cargo-fuzz
-      run: cargo fuzz init
-
-    - name: Run cargo-fuzz
-      run: cargo fuzz build
-
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
     - name: Run AddressSanitizer
+      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -688,7 +741,7 @@ jobs:
 
   # Code coverage on Windows does not work because there are problems 
   # with grcov paths
-  static-code-analysis:
+  static-code-analysis-windows:
 
     needs: build-test
 
@@ -719,7 +772,7 @@ jobs:
         name: rca-json-windows
         path: ~/rca-json
 
-  weighted-code-coverage:
+  weighted-code-coverage-windows:
 
     needs: build-test
 
@@ -784,7 +837,7 @@ jobs:
         name: weighted-code-coverage-windows
         path: ~/wcc-output/out.json
 
-  dependency-check:
+  dependency-check-windows:
 
     needs: build-test
 
@@ -849,28 +902,29 @@ jobs:
 
   # valgrind cannot be installed on Windows, only on linux
   # cargo-fuzz and AddressSanitizer are not supported on Windows
-  undefined-behaviour-dynamic-analysis:
+  unsafe-checks-windows:
 
-    needs: [static-code-analysis, weighted-code-coverage, dependency-check]
+    needs: [static-code-analysis-windows, weighted-code-coverage-windows, dependency-check-windows]
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+    - name: Install cargo-geiger
+      run: |
+        cargo install cargo-geiger --features vendored-openssl
+
+    - name: Run cargo-geiger
+      shell: bash
+      id: geiger
+      run: |
+        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
+        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
+        echo "::set-output name=result::$EXIT_CODE"
 
     - name: Install Rust nightly and miri
+      if: steps.geiger.outputs.result != '0'
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: nightly
@@ -878,6 +932,7 @@ jobs:
         override: true
 
     - name: Run miri
+      if: steps.geiger.outputs.result != '0'
       env:
         # -Zrandomize-layout makes sure not to rely on the layout of anything
         # that might change
