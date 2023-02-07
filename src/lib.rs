@@ -84,34 +84,32 @@ impl SifisTemplate {
         license: &dyn license::License,
         project_path: &Path,
     ) -> anyhow::Result<()> {
-        self.files
-            .insert(project_path.join("LICENSE"), "build.license");
-
+        let id = license.id();
         let header = license.header();
-        let complete_text: Vec<&str> = license
+
+        // Adds LICENSE directory and license file
+        let license_path = project_path.join("LICENSES");
+        self.files
+            .insert(license_path.join(format!("{}.txt", id)), "build.license");
+        self.dirs.push(license_path);
+
+        let text_without_blank: Vec<&str> = license
             .text()
             .lines()
             .skip(2) // Skip a blank line and license id
-            .collect();
-        let text_without_blank: Vec<&str> = complete_text
-            .iter()
             .filter(|x| !x.is_empty())
-            .copied()
             .collect();
 
-        let id = license.id();
+        let mut license_ctx = HashMap::new();
 
-        let mut license = HashMap::new();
-
-        license.insert("header", Value::from_serializable(&header));
-        license.insert("text", Value::from_serializable(&text_without_blank));
-        license.insert("id", Value::from_serializable(&id));
+        license_ctx.insert("header", Value::from_serializable(&header));
+        license_ctx.insert("text", Value::from_serializable(&text_without_blank));
+        license_ctx.insert("id", Value::from_serializable(&id));
 
         self.context
-            .insert("license", Value::from_serializable(&license));
+            .insert("license", Value::from_serializable(&license_ctx));
 
-        self.source
-            .add_template("build.license", complete_text.join("\n"))?;
+        self.source.add_template("build.license", license.text())?;
 
         Ok(())
     }
