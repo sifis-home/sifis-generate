@@ -895,7 +895,7 @@ jobs:
 
     - name: Install cargo-geiger
       run: |
-        cargo install cargo-geiger --features vendored-openssl
+        cargo install cargo-geiger
 
     - name: Run cargo-geiger
       shell: bash
