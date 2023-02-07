@@ -35,7 +35,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
         components: clippy, rustfmt
 
     - name: Run rustfmt
@@ -67,7 +66,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Build
       run: cargo build --verbose --all-targets
@@ -94,7 +92,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install grcov
       env:
@@ -208,7 +205,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install grcov
       env:
@@ -273,7 +269,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
@@ -332,7 +327,6 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        override: true
 
     - name: Cache produced data
       id: cache-data
@@ -372,7 +366,6 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        override: true
 
     - name: Install cargo-geiger
       run: |
@@ -409,7 +402,6 @@ jobs:
       with:
         toolchain: nightly
         components: miri, rust-src
-        override: true
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
@@ -450,7 +442,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install grcov
       env:
@@ -533,7 +524,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install grcov
       env:
@@ -598,7 +588,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
@@ -657,7 +646,6 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        override: true
 
     - name: Cache produced data
       id: cache-data
@@ -711,7 +699,6 @@ jobs:
       with:
         toolchain: nightly
         components: miri, rust-src
-        override: true
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
@@ -786,7 +773,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install grcov
       env:
@@ -851,7 +837,6 @@ jobs:
       with:
         profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
@@ -929,7 +914,6 @@ jobs:
       with:
         toolchain: nightly
         components: miri
-        override: true
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
