@@ -3,6 +3,6 @@ Upstream-Name: {{ reuse.name }}
 Upstream-Contact: Name Surname <mail@example.com>
 Source: https://your/project/link
 
-Files: po/*
+Files: *
 Copyright: 2019 Translation Company
-License: {{ reuse.id }}-or-later
+License: {{ reuse.id }}
