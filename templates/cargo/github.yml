@@ -33,7 +33,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
         components: clippy, rustfmt
 
@@ -64,7 +63,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Build
@@ -90,7 +88,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install grcov
@@ -203,7 +200,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install grcov
@@ -267,13 +263,11 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: nightly
 
     - name: Install cargo-udeps
@@ -323,10 +317,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
+        toolchain: nightly
 
     - name: Cache produced data
       id: cache-data
@@ -440,7 +434,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install grcov
@@ -522,7 +515,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install grcov
@@ -586,13 +578,11 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: nightly
 
     - name: Install cargo-udeps
@@ -642,10 +632,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
+        toolchain: nightly
 
     - name: Cache produced data
       id: cache-data
@@ -681,6 +671,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
 
     - name: Install cargo-geiger
       run: |
@@ -771,7 +766,6 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install grcov
@@ -835,13 +829,11 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: nightly
 
     - name: Install cargo-udeps
@@ -895,6 +887,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
 
     - name: Install cargo-geiger
       run: |
