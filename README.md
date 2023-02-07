@@ -1,7 +1,6 @@
 # sifis-generate
 
 [![Actions Status][actions badge]][actions]
-[![CodeCov][codecov badge]][codecov]
 [![LICENSE][license badge]][license]
 
 This tool generates either new projects for some build systems or configuration
@@ -122,10 +121,8 @@ This software has been developed in the scope of the H2020 project SIFIS-Home wi
 
 <!-- Links -->
 [actions]: https://github.com/sifis-home/sifis-generate/actions
-[codecov]: https://codecov.io/gh/sifis-home/sifis-generate
 [license]: LICENSES/MIT.txt
 
 <!-- Badges -->
 [actions badge]: https://github.com/sifis-home/sifis-generate/workflows/sifis-generate/badge.svg
-[codecov badge]: https://codecov.io/gh/sifis-home/sifis-generate/branch/master/graph/badge.svg
 [license badge]: https://img.shields.io/badge/license-MIT-blue.svg

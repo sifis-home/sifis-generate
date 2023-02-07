@@ -76,87 +76,6 @@ jobs:
 
 ################################## UBUNTU ##################################
 
-  code-coverage-ubuntu:
-
-    needs: build-test
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install grcov
-      env:
-        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: v0.8.7
-      run: |
-        curl -L "$GRCOV_LINK/$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
-        tar xj -C $HOME/.cargo/bin
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    # Not necessary on a newly created image, but strictly advised
-    - name: Run cargo clean
-      run: |
-        cargo clean
-
-    - name: Run tests
-      env:
-        CARGO_INCREMENTAL: 0
-        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-        RUSTFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-        RUSTDOCFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-      run: |
-        cargo test --verbose
-
-    - name: Get coverage data for codecov
-      run: |
-        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
-              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
-
-    - name: Codecov upload
-      uses: codecov/codecov-action@v3
-      with:
-        files: lcov.info
-
-    - name: Get total coverage
-      run: |
-        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
-              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
-              --ignore "../*"  > covdir.json
-
-    - name: Evaluate code coverage value
-      shell: bash
-      run: |
-        # Retrieve code coverage associated to the repository
-        FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
-        # Round the float value to the nearest value
-        COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
-        # If code coverage >= 80, green traffic light
-        if [ $COVERAGE_OUTPUT -ge 80 ]
-        then
-            echo "$COVERAGE_OUTPUT > 80 --> Green"
-        # If code coverage is >=60 but < 80, orange traffic light
-        elif [ $COVERAGE_OUTPUT -ge 60 ]
-        then
-            echo "60 <= $COVERAGE_OUTPUT < 80 --> Orange"
-        # Otherwise, red traffic light
-        else
-            echo "$COVERAGE_OUTPUT < 60 --> Red"
-            exit 1
-        fi
-
   static-code-analysis-ubuntu:
 
     needs: build-test
@@ -187,69 +106,6 @@ jobs:
       with:
         name: rca-json-ubuntu
         path: ~/rca-json
-
-  weighted-code-coverage-ubuntu:
-
-    needs: build-test
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install grcov
-      env:
-        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: v0.8.7
-        GRCOV_BINARY: grcov-x86_64-unknown-linux-musl.tar.bz2
-      run: |
-        curl -L "$GRCOV_LINK/$GRCOV_VERSION/$GRCOV_BINARY" |
-        tar xj -C $HOME/.cargo/bin
-
-    - name: Install weighted-code-coverage
-      env:
-        WCC_LINK: https://github.com/SoftengPoliTo/weighted-code-coverage/releases/download
-        WCC_VERSION: v0.1.0
-        WCC_BINARY: weighted-code-coverage-0.1.0-x86_64-unknown-linux-gnu.tar.gz
-      run: |
-        curl -L "$WCC_LINK/$WCC_VERSION/$WCC_BINARY" |
-        tar xz -C $HOME/.cargo/bin
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    # Not necessary on a newly created image, but strictly advised
-    - name: Run cargo clean
-      run: |
-        cargo clean
-
-    - name: Run tests
-      env:
-        RUSTFLAGS: "-Cinstrument-coverage"
-        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-      run: |
-        cargo test --verbose
-
-    - name: Run grcov
-      run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
-
-    - name: Run weighted-code-coverage
-      run: |
-        mkdir $HOME/wcc-output
-        weighted-code-coverage -p src/ -j coveralls.json -c --json $HOME/wcc-output/out.json
-
-    - name: Upload weighted-code-coverage data
-      uses: actions/upload-artifact@v3
-      with:
-        name: weighted-code-coverage-ubuntu
-        path: ~/wcc-output/out.json
 
   dependency-check-ubuntu:
 
@@ -310,7 +166,7 @@ jobs:
 
   fuzzy-ubuntu:
 
-    needs: [code-coverage-ubuntu, static-code-analysis-ubuntu, weighted-code-coverage-ubuntu, dependency-check-ubuntu]
+    needs: [static-code-analysis-ubuntu, dependency-check-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -422,150 +278,6 @@ jobs:
 
 ################################## MACOS ##################################
 
-  code-coverage-macos:
-
-    needs: build-test
-
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install grcov
-      env:
-        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: v0.8.7
-      run: |
-        curl -L "$GRCOV_LINK/$GRCOV_VERSION/grcov-x86_64-apple-darwin.tar.bz2" |
-        tar xj -C $HOME/.cargo/bin
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    # Not necessary on a newly created image, but strictly advised
-    - name: Run cargo clean
-      run: |
-        cargo clean
-
-    - name: Run tests
-      env:
-        CARGO_INCREMENTAL: 0
-        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-        RUSTFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-        RUSTDOCFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-      run: |
-        cargo test --verbose
-
-    - name: Get coverage data for codecov
-      run: |
-        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
-              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
-
-    - name: Codecov upload
-      uses: codecov/codecov-action@v3
-      with:
-        files: lcov.info
-
-    - name: Get total coverage
-      run: |
-        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
-              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
-              --ignore "../*"  > covdir.json
-
-    - name: Evaluate code coverage value
-      shell: bash
-      run: |
-        # Retrieve code coverage associated to the repository
-        FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
-        # Round the float value to the nearest value
-        COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
-        # If code coverage >= 80, green traffic light
-        if [ $COVERAGE_OUTPUT -ge 80 ]
-        then
-            echo "$COVERAGE_OUTPUT > 80 --> Green"
-        # If code coverage is >=60 but < 80, orange traffic light
-        elif [ $COVERAGE_OUTPUT -ge 60 ]
-        then
-            echo "60 <= $COVERAGE_OUTPUT < 80 --> Orange"
-        # Otherwise, red traffic light
-        else
-            echo "$COVERAGE_OUTPUT < 60 --> Red"
-            exit 1
-        fi
-
-  weighted-code-coverage-macos:
-
-    needs: build-test
-
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install grcov
-      env:
-        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: v0.8.7
-        GRCOV_BINARY: grcov-x86_64-apple-darwin.tar.bz2
-      run: |
-        curl -L "$GRCOV_LINK/$GRCOV_VERSION/$GRCOV_BINARY" |
-        tar xj -C $HOME/.cargo/bin
-
-    - name: Install weighted-code-coverage
-      env:
-        WCC_LINK: https://github.com/SoftengPoliTo/weighted-code-coverage/releases/download
-        WCC_VERSION: v0.1.0
-        WCC_BINARY: weighted-code-coverage-0.1.0-x86_64-apple-darwin.tar.gz
-      run: |
-        curl -L "$WCC_LINK/$WCC_VERSION/$WCC_BINARY" |
-        tar xz -C $HOME/.cargo/bin
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    # Not necessary on a newly created image, but strictly advised
-    - name: Run cargo clean
-      run: |
-        cargo clean
-
-    - name: Run tests
-      env:
-        RUSTFLAGS: "-Cinstrument-coverage"
-        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-      run: |
-        cargo test --verbose
-
-    - name: Run grcov
-      run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
-
-    - name: Run weighted-code-coverage
-      run: |
-        mkdir $HOME/wcc-output
-        weighted-code-coverage -p src/ -j coveralls.json -c --json $HOME/wcc-output/out.json
-
-    - name: Upload weighted-code-coverage data
-      uses: actions/upload-artifact@v3
-      with:
-        name: weighted-code-coverage-macos
-        path: ~/wcc-output/out.json
-
   dependency-check-macos:
 
     needs: build-test
@@ -625,7 +337,7 @@ jobs:
 
   fuzzy-macos:
 
-    needs: [code-coverage-macos, weighted-code-coverage-macos, dependency-check-macos]
+    needs: dependency-check-macos
 
     runs-on: macos-latest
 
@@ -754,69 +466,6 @@ jobs:
         name: rca-json-windows
         path: ~/rca-json
 
-  weighted-code-coverage-windows:
-
-    needs: build-test
-
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install grcov
-      env:
-        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
-        GRCOV_VERSION: v0.8.7
-        GRCOV_BINARY: grcov-x86_64-pc-windows-msvc.zip 
-      run: |
-        curl -LO "$Env:GRCOV_LINK/$Env:GRCOV_VERSION/$Env:GRCOV_BINARY"
-        7z e -y "$Env:GRCOV_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
-
-    - name: Install weighted-code-coverage
-      env:
-        WCC_LINK: https://github.com/SoftengPoliTo/weighted-code-coverage/releases/download
-        WCC_VERSION: v0.1.0
-        WCC_BINARY: weighted-code-coverage-0.1.0-x86_64-pc-windows-msvc.zip
-      run: |
-        curl -LO "$Env:WCC_LINK/$Env:WCC_VERSION/$Env:WCC_BINARY"
-        7z e -y "$Env:WCC_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
-
-    - name: Install llvm-tools-preview
-      run: |
-        rustup component add llvm-tools-preview
-
-    # Not necessary on a newly created image, but strictly advised
-    - name: Run cargo clean
-      run: |
-        cargo clean
-
-    - name: Run tests
-      env:
-        RUSTFLAGS: "-Cinstrument-coverage"
-        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-      run: |
-        cargo test --verbose
-
-    - name: Run grcov
-      run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
-
-    - name: Run weighted-code-coverage
-      run: |
-        mkdir $HOME/wcc-output
-        weighted-code-coverage -p src/ -j coveralls.json -c --json $HOME/wcc-output/out.json
-
-    - name: Upload weighted-code-coverage data
-      uses: actions/upload-artifact@v3
-      with:
-        name: weighted-code-coverage-windows
-        path: ~/wcc-output/out.json
-
   dependency-check-windows:
 
     needs: build-test
@@ -881,7 +530,7 @@ jobs:
   # cargo-fuzz and AddressSanitizer are not supported on Windows
   unsafe-checks-windows:
 
-    needs: [static-code-analysis-windows, weighted-code-coverage-windows, dependency-check-windows]
+    needs: [static-code-analysis-windows, dependency-check-windows]
 
     runs-on: windows-latest
 
