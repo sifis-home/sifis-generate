@@ -17,9 +17,7 @@ jobs:
     - name: Install stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
-        override: true
 
     - name: Build {{ name }}
       run: |
@@ -68,10 +66,8 @@ jobs:
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
         target: {{ '${{ matrix.target }}' }}
-        override: true
 
     - name: Install musl
       if: contains(matrix.target, 'linux-musl')
@@ -122,9 +118,7 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           toolchain: stable
-          override: true
 
       - name: Create Cargo.lock
         run: |
