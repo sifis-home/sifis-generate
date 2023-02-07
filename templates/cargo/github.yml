@@ -370,7 +370,7 @@ jobs:
       run: |
         # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
         [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "::set-output name=result::$EXIT_CODE"
+        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
 
     - name: Install valgrind
       if: steps.geiger.outputs.result != '0'
@@ -686,7 +686,7 @@ jobs:
       run: |
         # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
         [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "::set-output name=result::$EXIT_CODE"
+        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
 
     - name: Install Rust nightly and miri
       if: steps.geiger.outputs.result != '0'
@@ -903,7 +903,7 @@ jobs:
       run: |
         # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
         [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "::set-output name=result::$EXIT_CODE"
+        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
 
     - name: Install Rust nightly and miri
       if: steps.geiger.outputs.result != '0'
