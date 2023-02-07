@@ -9,7 +9,19 @@ on:
       - {{ branch }}
 
 jobs:
+  reuse:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v1
+
   style:
+
+    needs: reuse
 
     runs-on: ubuntu-latest
 
@@ -32,6 +44,8 @@ jobs:
         poetry run pre-commit run -a
 
   install-tests:
+
+    needs: [reuse, style]
 
     strategy:
       matrix:

@@ -9,7 +9,19 @@ on:
       - {{ branch }}
 
 jobs:
+  reuse:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: REUSE Compliance Check
+      uses: fsfe/reuse-action@v1
+
   workflow-steps:
+
+    needs: reuse
 
     strategy:
       matrix:
@@ -63,6 +75,8 @@ jobs:
           .build-directory-coverage/meson-logs/coverage.xml
 
   docker-compose-workflow:
+
+    needs: reuse
 
     runs-on: ubuntu-latest
 
