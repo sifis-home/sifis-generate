@@ -266,7 +266,7 @@ jobs:
         toolchain: stable
 
     - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
@@ -318,7 +318,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
@@ -392,7 +392,7 @@ jobs:
 
     - name: Install Rust nightly and miri
       if: steps.geiger.outputs.result != '0'
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri, rust-src
@@ -581,7 +581,7 @@ jobs:
         toolchain: stable
 
     - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
@@ -633,7 +633,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
@@ -690,7 +690,7 @@ jobs:
 
     - name: Install Rust nightly and miri
       if: steps.geiger.outputs.result != '0'
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri, rust-src
@@ -832,7 +832,7 @@ jobs:
         toolchain: stable
 
     - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
@@ -907,7 +907,7 @@ jobs:
 
     - name: Install Rust nightly and miri
       if: steps.geiger.outputs.result != '0'
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri
