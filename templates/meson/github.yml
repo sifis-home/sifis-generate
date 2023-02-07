@@ -19,7 +19,7 @@ jobs:
     - name: REUSE Compliance Check
       uses: fsfe/reuse-action@v1
 
-  workflow-steps:
+  tests:
 
     needs: reuse
 
@@ -74,7 +74,7 @@ jobs:
         path: |
           .build-directory-coverage/meson-logs/coverage.xml
 
-  docker-compose-workflow:
+  docker-compose-tests:
 
     needs: reuse
 
