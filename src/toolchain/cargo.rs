@@ -11,13 +11,7 @@ use crate::{
 static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("md.README", "README.md"),
     ("ci.gitlab", ".gitlab-ci.yml"),
-    ("ci.github.compact", "github-compact.yml"),
-    ("ci.github.ubuntu", "github-ubuntu.yml"),
-    ("ci.github.macos", "github-macos.yml"),
-    ("ci.github.windows", "github-windows.yml"),
-    ("ci.memory.checks.ubuntu", "memory-checks-ubuntu.yml"),
-    ("ci.memory.checks.macos", "memory-checks-macos.yml"),
-    ("ci.memory.checks.windows", "memory-checks-windows.yml"),
+    ("ci.github", "github.yml"),
     ("ci.github.deploy", "github-deploy.yml")
 ];
 
@@ -60,28 +54,7 @@ impl Cargo {
 
         // Continuous Integration
         template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
-        template_files.insert(github.join(format!("{name}.yml")), "ci.github.compact");
-        template_files.insert(
-            github.join(format!("{name}-ubuntu.yml")),
-            "ci.github.ubuntu",
-        );
-        template_files.insert(github.join(format!("{name}-macos.yml")), "ci.github.macos");
-        template_files.insert(
-            github.join(format!("{name}-windows.yml")),
-            "ci.github.windows",
-        );
-        template_files.insert(
-            github.join("memory-checks-ubuntu.yml"),
-            "ci.memory.checks.ubuntu",
-        );
-        template_files.insert(
-            github.join("memory-checks-macos.yml"),
-            "ci.memory.checks.macos",
-        );
-        template_files.insert(
-            github.join("memory-checks-windows.yml"),
-            "ci.memory.checks.windows",
-        );
+        template_files.insert(github.join(format!("{name}.yml")), "ci.github");
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
         (template_files, vec![root, github])
