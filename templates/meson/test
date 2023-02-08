@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: {{ license.id }}
 #include "{{ name | hypens_to_underscores ~ ".h"}}"
 
 int main()
