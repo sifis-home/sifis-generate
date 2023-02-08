@@ -360,14 +360,9 @@ jobs:
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+      run: |
+        cargo miri setup
+        cargo miri test
 
     - name: Run AddressSanitizer
       if: steps.geiger.outputs.result != '0'
@@ -658,14 +653,9 @@ jobs:
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+      run: |
+        cargo miri setup
+        cargo miri test
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
@@ -914,11 +904,6 @@ jobs:
 
     - name: Run miri
       if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+      run: |
+        cargo miri setup
+        cargo miri test
