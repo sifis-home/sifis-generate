@@ -169,7 +169,7 @@ jobs:
     - name: Install rust-code-analysis
       env:
         RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.23
+        RCA_VERSION: v0.0.25
       run: |
         mkdir -p $HOME/.local/bin
         curl -L "$RCA_LINK/$RCA_VERSION/rust-code-analysis-linux-cli-x86_64.tar.gz" |
@@ -179,8 +179,7 @@ jobs:
     - name: Run rust-code-analysis
       run: |
         mkdir $HOME/rca-json
-        # FIXME: Update rca version to analyze the entire directory of a repo
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p .
 
     - name: Upload rust-code-analysis json
       uses: actions/upload-artifact@v3
@@ -725,7 +724,7 @@ jobs:
     - name: Install rust-code-analysis
       env:
         RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.23
+        RCA_VERSION: v0.0.25
       run: |
         mkdir -p $HOME/bin
         curl -LO "$Env:RCA_LINK/$env:RCA_VERSION/rust-code-analysis-win-cli-x86_64.zip"
@@ -735,8 +734,7 @@ jobs:
     - name: Run rust-code-analysis
       run: |
         mkdir $HOME/rca-json
-        # FIXME: Update rca version to analyze the entire directory of a repo
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p .
 
     - name: Upload rust-code-analysis json
       uses: actions/upload-artifact@v3
