@@ -354,6 +354,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Install cargo-careful
       if: steps.cache-data.outputs.cache-hit != 'true'
@@ -632,6 +633,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Cache produced data
       id: cache-data
@@ -879,6 +881,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Cache produced data
       id: cache-data
