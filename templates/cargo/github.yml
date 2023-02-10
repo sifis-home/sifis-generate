@@ -321,7 +321,20 @@ jobs:
       with:
         toolchain: stable
 
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
     - name: Install cargo-geiger
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-geiger
 
@@ -632,7 +645,20 @@ jobs:
       with:
         toolchain: stable
 
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
     - name: Install cargo-geiger
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-geiger
 
@@ -882,7 +908,20 @@ jobs:
       with:
         toolchain: stable
 
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
     - name: Install cargo-geiger
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-geiger
 
