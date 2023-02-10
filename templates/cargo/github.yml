@@ -334,11 +334,13 @@ jobs:
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
     - name: Install valgrind
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         sudo apt-get install valgrind
 
     # FIXME Use binaries
     - name: Install cargo-valgrind
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-valgrind
 
@@ -347,6 +349,7 @@ jobs:
     - name: Run cargo-valgrind
       run: |
         cargo valgrind run -- --help
+        # cargo valgrind test
 
     - name: Install Rust nightly and miri
       uses: dtolnay/rust-toolchain@nightly
