@@ -350,7 +350,7 @@ jobs:
         cargo valgrind run -- --help
         # cargo valgrind test
 
-    - name: Install Rust nightly and miri
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
@@ -628,7 +628,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
@@ -875,7 +875,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
