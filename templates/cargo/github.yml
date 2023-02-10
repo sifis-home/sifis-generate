@@ -333,51 +333,33 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install cargo-geiger
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
-
     - name: Install valgrind
-      if: steps.geiger.outputs.result != '0'
       run: |
         sudo apt-get install valgrind
 
     # FIXME Use binaries
     - name: Install cargo-valgrind
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo install cargo-valgrind
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that valgrind has to analyze
     - name: Run cargo-valgrind
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo valgrind run -- --help
 
     - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri, rust-src
 
     - name: Run miri
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo miri setup
         cargo miri test
 
     - name: Run AddressSanitizer
-      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -657,27 +639,13 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install cargo-geiger
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
-
     - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri, rust-src
 
     - name: Run miri
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo miri setup
         cargo miri test
@@ -685,7 +653,6 @@ jobs:
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
     - name: Run AddressSanitizer
-      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -920,28 +887,13 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install cargo-geiger
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      shell: bash
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
-
     - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
         components: miri
 
     - name: Run miri
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo miri setup
         cargo miri test
