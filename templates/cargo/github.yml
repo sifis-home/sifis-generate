@@ -355,12 +355,16 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
-        components: miri, rust-src
 
-    - name: Run miri
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
-        cargo miri setup
-        cargo miri test
+        cargo install cargo-careful
+
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
 
     - name: Run AddressSanitizer
       env:
@@ -626,9 +630,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: stable
+        toolchain: nightly
 
     - name: Cache produced data
       id: cache-data
@@ -642,16 +646,15 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install Rust nightly and miri
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        components: miri, rust-src
-
-    - name: Run miri
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
-        cargo miri setup
-        cargo miri test
+        cargo install cargo-careful
+
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
@@ -874,9 +877,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: stable
+        toolchain: nightly
 
     - name: Cache produced data
       id: cache-data
@@ -890,13 +893,12 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install Rust nightly and miri
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        components: miri
-
-    - name: Run miri
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
-        cargo miri setup
-        cargo miri test
+        cargo install cargo-careful
+
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
