@@ -334,7 +334,6 @@ jobs:
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
     - name: Install valgrind
-      if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         sudo apt-get install valgrind
 
