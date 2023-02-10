@@ -307,7 +307,7 @@ jobs:
       run: |
         cargo audit
 
-  unsafe-checks-ubuntu:
+  cache-level-ubuntu:
 
     needs: [code-coverage-ubuntu, static-code-analysis-ubuntu, weighted-code-coverage-ubuntu, dependency-check-ubuntu]
 
@@ -316,10 +316,49 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
       with:
-        toolchain: stable
+        toolchain: nightly
+        components: rust-src
+
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
+    # FIXME Use binaries
+    - name: Install cargo-valgrind
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-valgrind
+
+    # FIXME Use binaries
+    - name: Install cargo-fuzz
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-fuzz
+
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-careful
+
+  unsafe-checks-ubuntu:
+
+    needs: cache-level-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Cache produced data
       id: cache-data
@@ -337,12 +376,6 @@ jobs:
       run: |
         sudo apt-get install valgrind
 
-    # FIXME Use binaries
-    - name: Install cargo-valgrind
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-valgrind
-
     # Usage of the `help` command as base command, please replace it
     # with the effective command that valgrind has to analyze
     - name: Run cargo-valgrind
@@ -355,11 +388,6 @@ jobs:
       with:
         toolchain: nightly
         components: rust-src
-
-    - name: Install cargo-careful
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-careful
 
     - name: Run cargo-careful
       run: |
@@ -401,12 +429,6 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
-
-    # FIXME Use binaries
-    - name: Install cargo-fuzz
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-fuzz
 
     # FIXME Create a template with a dummy series of fuzzy tests
     - name: Init cargo-fuzz
@@ -619,8 +641,7 @@ jobs:
       run: |
         cargo audit
 
-  # Valgrind cannot be installed on macos, only on linux
-  unsafe-checks-macos:
+  cache-level-macos:
 
     needs: [code-coverage-macos, weighted-code-coverage-macos, dependency-check-macos]
 
@@ -647,10 +668,44 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
+    # FIXME Use binaries
+    - name: Install cargo-fuzz
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-fuzz
+
     - name: Install cargo-careful
       if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-careful
+
+  # Valgrind cannot be installed on macos, only on linux
+  unsafe-checks-macos:
+
+    needs: cache-level-macos
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+        components: rust-src
+
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
     - name: Run cargo-careful
       run: |
@@ -694,12 +749,6 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
-
-    # FIXME Use binaries
-    - name: Install cargo-fuzz
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-fuzz
 
     # FIXME Create a template with a dummy series of fuzzy tests
     - name: Init cargo-fuzz
