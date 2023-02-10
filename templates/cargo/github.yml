@@ -179,7 +179,7 @@ jobs:
     - name: Run rust-code-analysis
       run: |
         mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p .
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p $PWD
 
     - name: Upload rust-code-analysis json
       uses: actions/upload-artifact@v3
@@ -733,8 +733,9 @@ jobs:
 
     - name: Run rust-code-analysis
       run: |
+        # FIXME Broken on Windows with absolute paths, so using src/ as path for now
         mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p .
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
 
     - name: Upload rust-code-analysis json
       uses: actions/upload-artifact@v3
