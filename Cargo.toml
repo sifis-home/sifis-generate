@@ -16,7 +16,7 @@ clap = { version = "4", features = ["derive"] }
 license = "3"
 minijinja = { version = "0.30", features = ["source"] }
 serde = { version = "1", features = ["derive"] }
-textwrap = "0.15"
+textwrap = "0.16"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
