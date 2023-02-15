@@ -595,14 +595,8 @@ jobs:
 
     - name: Run tests
       env:
-        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Cinstrument-coverage"
         LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
-        RUSTFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-        RUSTDOCFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
       run: |
         cargo test --verbose
 
@@ -615,12 +609,6 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         files: lcov.info
-
-    - name: Get total coverage
-      run: |
-        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
-              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
-              --ignore "../*"  > covdir.json
 
   static-code-analysis-windows:
 
