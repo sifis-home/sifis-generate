@@ -91,6 +91,36 @@ jobs:
 
 ################################## UBUNTU ##################################
 
+  static-code-analysis-ubuntu:
+
+    needs: [build, docs]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install rust-code-analysis
+      env:
+        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
+        RCA_VERSION: v0.0.25
+      run: |
+        mkdir -p $HOME/.local/bin
+        curl -L "$RCA_LINK/$RCA_VERSION/rust-code-analysis-linux-cli-x86_64.tar.gz" |
+        tar xz -C $HOME/.local/bin
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Run rust-code-analysis
+      run: |
+        mkdir $HOME/rca-json
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p $PWD
+
+    - name: Upload rust-code-analysis json
+      uses: actions/upload-artifact@v3
+      with:
+        name: rca-json-ubuntu
+        path: ~/rca-json
+
   code-coverage-ubuntu:
 
     needs: [build, docs]
@@ -171,36 +201,6 @@ jobs:
             echo "$COVERAGE_OUTPUT < 60 --> Red"
             exit 1
         fi
-
-  static-code-analysis-ubuntu:
-
-    needs: [build, docs]
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install rust-code-analysis
-      env:
-        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.25
-      run: |
-        mkdir -p $HOME/.local/bin
-        curl -L "$RCA_LINK/$RCA_VERSION/rust-code-analysis-linux-cli-x86_64.tar.gz" |
-        tar xz -C $HOME/.local/bin
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Run rust-code-analysis
-      run: |
-        mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p $PWD
-
-    - name: Upload rust-code-analysis json
-      uses: actions/upload-artifact@v3
-      with:
-        name: rca-json-ubuntu
-        path: ~/rca-json
 
   weighted-code-coverage-ubuntu:
 
@@ -754,6 +754,37 @@ jobs:
 
 ################################## WINDOWS ##################################
 
+  static-code-analysis-windows:
+
+    needs: [build, docs]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install rust-code-analysis
+      env:
+        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
+        RCA_VERSION: v0.0.25
+      run: |
+        mkdir -p $HOME/bin
+        curl -LO "$Env:RCA_LINK/$env:RCA_VERSION/rust-code-analysis-win-cli-x86_64.zip"
+        7z e -y "rust-code-analysis-win-cli-x86_64.zip" -o"$HOME/bin"
+        echo "$HOME/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Run rust-code-analysis
+      run: |
+        # FIXME Broken on Windows with absolute paths, so using src/ as path for now
+        mkdir $HOME/rca-json
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
+
+    - name: Upload rust-code-analysis json
+      uses: actions/upload-artifact@v3
+      with:
+        name: rca-json-windows
+        path: ~/rca-json
+
   code-coverage-windows:
 
     needs: [build, docs]
@@ -829,37 +860,6 @@ jobs:
             echo "$COVERAGE_OUTPUT < 60 --> Red"
             exit 1
         fi
-
-  static-code-analysis-windows:
-
-    needs: [build, docs]
-
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install rust-code-analysis
-      env:
-        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.25
-      run: |
-        mkdir -p $HOME/bin
-        curl -LO "$Env:RCA_LINK/$env:RCA_VERSION/rust-code-analysis-win-cli-x86_64.zip"
-        7z e -y "rust-code-analysis-win-cli-x86_64.zip" -o"$HOME/bin"
-        echo "$HOME/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Run rust-code-analysis
-      run: |
-        # FIXME Broken on Windows with absolute paths, so using src/ as path for now
-        mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
-
-    - name: Upload rust-code-analysis json
-      uses: actions/upload-artifact@v3
-      with:
-        name: rca-json-windows
-        path: ~/rca-json
 
   weighted-code-coverage-windows:
 
