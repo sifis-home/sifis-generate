@@ -47,7 +47,7 @@ jobs:
         clippy_flags: --all-targets -- -D warnings
         reporter: github-pr-review
 
-  build-docs:
+  build:
 
     needs: [reuse, clippy-rustfmt]
 
@@ -68,6 +68,24 @@ jobs:
     - name: Build
       run: cargo build --verbose
 
+  docs:
+
+    needs: [reuse, clippy-rustfmt]
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: {{ '${{ matrix.platform }}' }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
     - name: Generate docs
       run: cargo doc --verbose --no-deps
 
@@ -75,7 +93,7 @@ jobs:
 
   code-coverage-ubuntu:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: ubuntu-latest
 
@@ -156,7 +174,7 @@ jobs:
 
   static-code-analysis-ubuntu:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: ubuntu-latest
 
@@ -186,7 +204,7 @@ jobs:
 
   weighted-code-coverage-ubuntu:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: ubuntu-latest
 
@@ -249,7 +267,7 @@ jobs:
 
   dependency-check-ubuntu:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: ubuntu-latest
 
@@ -429,7 +447,7 @@ jobs:
 
   code-coverage-macos:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: macos-latest
 
@@ -510,7 +528,7 @@ jobs:
 
   weighted-code-coverage-macos:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: macos-latest
 
@@ -573,7 +591,7 @@ jobs:
 
   dependency-check-macos:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: macos-latest
 
@@ -738,7 +756,7 @@ jobs:
 
   code-coverage-windows:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: windows-latest
 
@@ -820,7 +838,7 @@ jobs:
 
   static-code-analysis-windows:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: windows-latest
 
@@ -851,7 +869,7 @@ jobs:
 
   weighted-code-coverage-windows:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: windows-latest
 
@@ -914,7 +932,7 @@ jobs:
 
   dependency-check-windows:
 
-    needs: build-docs
+    needs: [build, docs]
 
     runs-on: windows-latest
 
