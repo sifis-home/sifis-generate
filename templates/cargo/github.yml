@@ -47,7 +47,7 @@ jobs:
         clippy_flags: --all-targets -- -D warnings
         reporter: github-pr-review
 
-  build-test:
+  build-docs:
 
     needs: [reuse, clippy-rustfmt]
 
@@ -66,16 +66,16 @@ jobs:
         toolchain: stable
 
     - name: Build
-      run: cargo build --verbose --all-targets
+      run: cargo build --verbose
 
     - name: Generate docs
-      run: cargo doc --no-deps
+      run: cargo doc --verbose --no-deps
 
 ################################## UBUNTU ##################################
 
   code-coverage-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -156,7 +156,7 @@ jobs:
 
   static-code-analysis-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -186,7 +186,7 @@ jobs:
 
   weighted-code-coverage-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -249,7 +249,7 @@ jobs:
 
   dependency-check-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -429,7 +429,7 @@ jobs:
 
   code-coverage-macos:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: macos-latest
 
@@ -510,7 +510,7 @@ jobs:
 
   weighted-code-coverage-macos:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: macos-latest
 
@@ -573,7 +573,7 @@ jobs:
 
   dependency-check-macos:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: macos-latest
 
@@ -738,7 +738,7 @@ jobs:
 
   code-coverage-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
@@ -820,7 +820,7 @@ jobs:
 
   static-code-analysis-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
@@ -851,7 +851,7 @@ jobs:
 
   weighted-code-coverage-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
@@ -914,7 +914,7 @@ jobs:
 
   dependency-check-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
