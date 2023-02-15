@@ -27,7 +27,7 @@ jobs:
       shell: bash
       id: tagName
       run: |
-        VERSION=$(cargo pkgid | cut -d# -f2 | cut -d: -f2)
+        VERSION=$(cargo pkgid | cut -d# -f2)
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build package
@@ -87,7 +87,7 @@ jobs:
     - name: Get the version
       id: tagName
       run: |
-        VERSION=$(cargo pkgid | cut -d# -f2 | cut -d: -f2)
+        VERSION=$(cargo pkgid | cut -d# -f2)
         echo "tag=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build package
@@ -127,7 +127,7 @@ jobs:
       - name: Get version
         id: tagName
         run: |
-          VERSION=$(cargo pkgid | cut -d# -f2 | cut -d: -f2)
+          VERSION=$(cargo pkgid | cut -d# -f2)
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download artifacts
