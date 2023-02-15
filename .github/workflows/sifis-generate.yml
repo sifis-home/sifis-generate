@@ -47,7 +47,7 @@ jobs:
         clippy_flags: --all-targets -- -D warnings
         reporter: github-pr-review
 
-  build-test:
+  build-docs:
 
     needs: [reuse, clippy-rustfmt]
 
@@ -66,19 +66,70 @@ jobs:
         toolchain: stable
 
     - name: Build
-      run: cargo build --verbose --all-targets
-
-    - name: Run tests
-      run: cargo test --verbose
+      run: cargo build --verbose
 
     - name: Generate docs
-      run: cargo doc --no-deps
+      run: cargo doc --verbose --no-deps
 
 ################################## UBUNTU ##################################
 
+  code-coverage-ubuntu:
+
+    needs: build-docs
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install grcov
+      env:
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: v0.8.13
+      run: |
+        curl -L "$GRCOV_LINK/$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
+        tar xj -C $HOME/.cargo/bin
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        CARGO_INCREMENTAL: 0
+        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
+        RUSTFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+        RUSTDOCFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+      run: |
+        cargo test --verbose
+
+    - name: Get coverage data for codecov
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v3
+      with:
+        files: lcov.info
+
   static-code-analysis-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -108,7 +159,7 @@ jobs:
 
   dependency-check-ubuntu:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: ubuntu-latest
 
@@ -163,9 +214,9 @@ jobs:
       run: |
         cargo audit
 
-  fuzzy-ubuntu:
+  cache-level-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, dependency-check-ubuntu]
+    needs: [code-coverage-ubuntu, static-code-analysis-ubuntu, dependency-check-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -176,6 +227,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Cache produced data
       id: cache-data
@@ -190,81 +242,60 @@ jobs:
         key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
 
     # FIXME Use binaries
-    - name: Install cargo-fuzz
+    - name: Install cargo-valgrind
       if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
-        cargo install cargo-fuzz
+        cargo install cargo-valgrind
 
-    # FIXME Create a template with a dummy series of fuzzy tests
-    - name: Init cargo-fuzz
-      run: cargo fuzz init
-
-    - name: Run cargo-fuzz
-      run: cargo fuzz build
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-careful
 
   unsafe-checks-ubuntu:
 
-    needs: fuzzy-ubuntu
+    needs: cache-level-ubuntu
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
       with:
-        toolchain: stable
-
-    - name: Install cargo-geiger
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
 
     - name: Install valgrind
-      if: steps.geiger.outputs.result != '0'
       run: |
         sudo apt-get install valgrind
-
-    # FIXME Use binaries
-    - name: Install cargo-valgrind
-      if: steps.geiger.outputs.result != '0'
-      run: |
-        cargo install cargo-valgrind
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that valgrind has to analyze
     - name: Run cargo-valgrind
-      if: steps.geiger.outputs.result != '0'
       run: |
         cargo valgrind run -- --help
+        # cargo valgrind test
 
-    - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
-        components: miri, rust-src
+        components: rust-src
 
-    - name: Run miri
-      if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
 
     - name: Run AddressSanitizer
-      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -274,12 +305,100 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-unknown-linux-gnu -- --help
 
+  fuzzy-ubuntu:
+
+    needs: unsafe-checks-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+
+    - name: Install cargo-fuzz
+      env:
+        FUZZ_LINK: https://github.com/rust-fuzz/cargo-fuzz/releases/download
+        FUZZ_VERSION: 0.11.2
+      run: |
+        curl -L "FUZZ_LINK$FUZZ_VERSION/cargo-fuzz-$FUZZ_VERSION-x86_64-unknown-linux-musl.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 1
+
+    # FIXME Create a template with a dummy series of fuzzy tests
+    - name: Init cargo-fuzz
+      run: cargo fuzz init
+
+    - name: Run cargo-fuzz
+      run: cargo fuzz build
 
 ################################## MACOS ##################################
 
+  code-coverage-macos:
+
+    needs: build-docs
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install grcov
+      env:
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: v0.8.13
+      run: |
+        curl -L "$GRCOV_LINK/$GRCOV_VERSION/grcov-x86_64-apple-darwin.tar.bz2" |
+        tar xj -C $HOME/.cargo/bin
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        CARGO_INCREMENTAL: 0
+        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
+        RUSTFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+        RUSTDOCFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+      run: |
+        cargo test --verbose
+
+    - name: Get coverage data for codecov
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v3
+      with:
+        files: lcov.info
+
+    - name: Get total coverage
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
+              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
+              --ignore "../*"  > covdir.json
+
   dependency-check-macos:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: macos-latest
 
@@ -334,9 +453,9 @@ jobs:
       run: |
         cargo audit
 
-  fuzzy-macos:
+  cache-level-macos:
 
-    needs: dependency-check-macos
+    needs: [code-coverage-macos, dependency-check-macos]
 
     runs-on: macos-latest
 
@@ -347,6 +466,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Cache produced data
       id: cache-data
@@ -360,67 +480,47 @@ jobs:
           target/
         key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
 
-    # FIXME Use binaries
-    - name: Install cargo-fuzz
+    - name: Install cargo-careful
       if: steps.cache-data.outputs.cache-hit != 'true'
       run: |
-        cargo install cargo-fuzz
-
-    # FIXME Create a template with a dummy series of fuzzy tests
-    - name: Init cargo-fuzz
-      run: cargo fuzz init
-
-    - name: Run cargo-fuzz
-      run: cargo fuzz build
+        cargo install cargo-careful
 
   # Valgrind cannot be installed on macos, only on linux
   unsafe-checks-macos:
 
-    needs: fuzzy-macos
+    needs: cache-level-macos
 
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install cargo-geiger
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
-
-    - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
-        components: miri, rust-src
+        components: rust-src
 
-    - name: Run miri
-      if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
+
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
     - name: Run AddressSanitizer
-      if: steps.geiger.outputs.result != '0'
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
         RUSTDOCFLAGS: -Zsanitizer=address
@@ -430,13 +530,101 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-apple-darwin -- --help
 
+  fuzzy-macos:
+
+    needs: unsafe-checks-macos
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+
+    - name: Install cargo-fuzz
+      env:
+        FUZZ_LINK: https://github.com/rust-fuzz/cargo-fuzz/releases/download
+        FUZZ_VERSION: 0.11.2
+      run: |
+        curl -L "FUZZ_LINK$FUZZ_VERSION/cargo-fuzz-$FUZZ_VERSION-cargo-fuzz-$FUZZ_VERSION-x86_64-apple-darwin.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 1
+
+    # FIXME Create a template with a dummy series of fuzzy tests
+    - name: Init cargo-fuzz
+      run: cargo fuzz init
+
+    - name: Run cargo-fuzz
+      run: cargo fuzz build
+
 ################################## WINDOWS ##################################
 
-  # Code coverage on Windows does not work because there are problems 
-  # with grcov paths
+  code-coverage-windows:
+
+    needs: build-docs
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install grcov
+      env:
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: v0.8.13
+        GRCOV_BINARY: grcov-x86_64-pc-windows-msvc.zip
+      run: |
+        curl -LO "$Env:GRCOV_LINK/$Env:GRCOV_VERSION/$Env:GRCOV_BINARY"
+        7z e -y "$Env:GRCOV_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        CARGO_INCREMENTAL: 0
+        LLVM_PROFILE_FILE: "sifis-generate-%p-%m.profraw"
+        RUSTFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+        RUSTDOCFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+      run: |
+        cargo test --verbose
+
+    - name: Get coverage data for codecov
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v3
+      with:
+        files: lcov.info
+
+    - name: Get total coverage
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
+              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
+              --ignore "../*"  > covdir.json
+
   static-code-analysis-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
@@ -455,7 +643,7 @@ jobs:
 
     - name: Run rust-code-analysis
       run: |
-        #FIXME Broken absolute paths on Windows
+        # FIXME Broken on Windows with absolute paths, so using src/ as path for now
         mkdir $HOME/rca-json
         rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
 
@@ -467,7 +655,7 @@ jobs:
 
   dependency-check-windows:
 
-    needs: build-test
+    needs: build-docs
 
     runs-on: windows-latest
 
@@ -529,44 +717,37 @@ jobs:
   # cargo-fuzz and AddressSanitizer are not supported on Windows
   unsafe-checks-windows:
 
-    needs: [static-code-analysis-windows, dependency-check-windows]
+    needs: [code-coverage-windows, static-code-analysis-windows, dependency-check-windows]
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Rust stable
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-
-    - name: Install cargo-geiger
-      run: |
-        cargo install cargo-geiger
-
-    - name: Run cargo-geiger
-      shell: bash
-      id: geiger
-      run: |
-        # If there is unsafe code, cargo geiger exit code is 1, otherwise 0
-        [ -z $(cargo geiger || echo $?) ] && EXIT_CODE=0 || EXIT_CODE=1
-        echo "result=$EXIT_CODE" >> $GITHUB_OUTPUT
-
-    - name: Install Rust nightly and miri
-      if: steps.geiger.outputs.result != '0'
+    - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
-        components: miri
+        components: rust-src
 
-    - name: Run miri
-      if: steps.geiger.outputs.result != '0'
-      env:
-        # -Zrandomize-layout makes sure not to rely on the layout of anything
-        # that might change
-        RUSTFLAGS: -Zrandomize-layout
-        # -Zmiri-symbolic-alignment-check makes the alignment check more strict.
-        MIRIFLAGS: >
-          -Zmiri-symbolic-alignment-check
-      run: cargo miri test
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
+
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-careful
+
+    - name: Run cargo-careful
+      run: |
+        cargo +nightly careful test
+        # cargo +nightly careful run
