@@ -788,14 +788,8 @@ jobs:
 
     - name: Run tests
       env:
-        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Cinstrument-coverage"
         LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
-        RUSTFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
-        RUSTDOCFLAGS: >
-          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
-          -Coverflow-checks=off
       run: |
         cargo test --verbose
 
