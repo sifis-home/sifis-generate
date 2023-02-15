@@ -68,9 +68,6 @@ jobs:
     - name: Build
       run: cargo build --verbose --all-targets
 
-    - name: Run tests
-      run: cargo test --verbose
-
     - name: Generate docs
       run: cargo doc --no-deps
 
@@ -739,8 +736,88 @@ jobs:
 
 ################################## WINDOWS ##################################
 
-  # Code coverage on Windows does not work because there are problems 
-  # with grcov paths
+  code-coverage-windows:
+
+    needs: build-test
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install grcov
+      env:
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: v0.8.7
+        GRCOV_BINARY: grcov-x86_64-pc-windows-msvc.zip
+      run: |
+        curl -LO "$Env:GRCOV_LINK/$Env:GRCOV_VERSION/$Env:GRCOV_BINARY"
+        7z e -y "$Env:GRCOV_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        CARGO_INCREMENTAL: 0
+        LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
+        RUSTFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+        RUSTDOCFLAGS: >
+          -Cinstrument-coverage -Ccodegen-units=1 -Clink-dead-code
+          -Coverflow-checks=off
+      run: |
+        cargo test --verbose
+
+    - name: Get coverage data for codecov
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t lcov --branch \
+              --ignore-not-existing --ignore "/*" --ignore "../*" -o lcov.info
+
+    - name: Codecov upload
+      uses: codecov/codecov-action@v3
+      with:
+        files: lcov.info
+
+    - name: Get total coverage
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
+              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
+              --ignore "../*"  > covdir.json
+
+    - name: Evaluate code coverage value
+      shell: bash
+      run: |
+        # Retrieve code coverage associated to the repository
+        FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
+        # Round the float value to the nearest value
+        COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
+        # If code coverage >= 80, green traffic light
+        if [ $COVERAGE_OUTPUT -ge 80 ]
+        then
+            echo "$COVERAGE_OUTPUT > 80 --> Green"
+        # If code coverage is >=60 but < 80, orange traffic light
+        elif [ $COVERAGE_OUTPUT -ge 60 ]
+        then
+            echo "60 <= $COVERAGE_OUTPUT < 80 --> Orange"
+        # Otherwise, red traffic light
+        else
+            echo "$COVERAGE_OUTPUT < 60 --> Red"
+            exit 1
+        fi
+
   static-code-analysis-windows:
 
     needs: build-test
