@@ -976,7 +976,7 @@ jobs:
   # cargo-fuzz and AddressSanitizer are not supported on Windows
   unsafe-checks-windows:
 
-    needs: [static-code-analysis-windows, weighted-code-coverage-windows, dependency-check-windows]
+    needs: [code-coverage-windows, static-code-analysis-windows, weighted-code-coverage-windows, dependency-check-windows]
 
     runs-on: windows-latest
 
