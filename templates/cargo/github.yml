@@ -954,15 +954,9 @@ jobs:
           target/
         key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
 
-    - name: Install cargo-careful
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-careful
-
     - name: Run cargo-careful
       run: |
         cargo +nightly careful test
-        # cargo +nightly careful run
 
 ################################## FUZZY LEVEL #################################
 
