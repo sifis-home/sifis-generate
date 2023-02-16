@@ -12,7 +12,10 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("md.README", "README.md"),
     ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml"),
-    ("ci.github.deploy", "github-deploy.yml")
+    ("ci.github.deploy", "github-deploy.yml"),
+    ("fuzz.gitignore", ".gitignore-fuzz"),
+    ("fuzz.cargo", "cargo-fuzz.toml"),
+    ("fuzz.target", "fuzz_target_1.rs")
 ];
 
 /// A cargo project data.
@@ -46,6 +49,8 @@ impl Cargo {
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
         let root = project_path.to_path_buf();
         let github = project_path.join(".github/workflows");
+        let fuzz = project_path.join("fuzz");
+        let fuzz_targets = fuzz.join("fuzz_targets");
 
         let mut template_files = HashMap::new();
 
@@ -57,7 +62,12 @@ impl Cargo {
         template_files.insert(github.join(format!("{name}.yml")), "ci.github");
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
-        (template_files, vec![root, github])
+        // Fuzz
+        template_files.insert(fuzz.join(".gitignore"), "fuzz.gitignore");
+        template_files.insert(fuzz.join("Cargo.toml"), "fuzz.cargo");
+        template_files.insert(fuzz_targets.join("fuzz_target_1.rs"), "fuzz.target");
+
+        (template_files, vec![root, github, fuzz, fuzz_targets])
     }
 }
 
