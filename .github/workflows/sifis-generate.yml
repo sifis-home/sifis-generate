@@ -337,7 +337,7 @@ jobs:
       run: cargo fuzz init
 
     - name: Run cargo-fuzz
-      run: cargo fuzz build
+      run: cargo fuzz build --target x86_64-unknown-linux-musl
 
 ################################## MACOS ##################################
 
