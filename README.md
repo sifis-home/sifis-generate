@@ -17,11 +17,11 @@ tests and implement further checks.
 
 | Build system | Languages | Project template | CI style checks | CI build | CI test | CI coverage upload | CI static analysis | CI dynamic analisys | CI license checks |
 | - | - | - | - | - | - | - | - | - | - |
-| meson | C/C++ | provided | no | yes | yes | yes | yes | no | yes (Asan) | yes (REUSE) |
+| meson | C / C++ | provided | no | yes | yes | yes | yes | no | yes (Asan) | yes (REUSE) |
 | poetry | Python | provided | yes (blake, isort) | yes | yes | no | yes (pylint) | no | yes (REUSE) |
 | maven | Java | provided | no | yes | yes | no | no | no | yes (REUSE) |
-| cargo | Rust | offloaded | yes (rustfmt) | yes | yes | yes | yes(clippy, r-c-a) | yes(valgrind, careful, asan) | yes (REUSE) |
-| yarn | Javascript/Typescript| offloaded | no | yes | no | no | no | no | yes (REUSE) |
+| cargo | Rust | offloaded | yes (rustfmt) | yes | yes | yes | yes (clippy, r-c-a) | yes (valgrind, careful, asan) | yes (REUSE) |
+| yarn | Javascript / Typescript| offloaded | no | yes | no | no | no | no | yes (REUSE) |
 
 __*__ sifis-generate provides opinionated defaults if the build system does not offer a mean to autogenerate a project itself.
 
