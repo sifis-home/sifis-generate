@@ -881,6 +881,38 @@ jobs:
       run: |
         cargo install cargo-careful
 
+  cache-level-windows:
+
+    needs: [audit-windows, deny-windows, udeps-windows]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+        components: rust-src
+
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+
+    - name: Install cargo-careful
+      if: steps.cache-data.outputs.cache-hit != 'true'
+      run: |
+        cargo install cargo-careful
+
 ################################## UNSAFE CHECKS LEVEL #########################
 
   unsafe-checks-ubuntu:
@@ -990,7 +1022,7 @@ jobs:
 
   unsafe-checks-windows:
 
-    needs: [audit-windows, deny-windows, udeps-windows]
+    needs: cache-level-windows
 
     runs-on: windows-latest
 
