@@ -516,6 +516,7 @@ jobs:
         filters: |
           cargo:
             - 'Cargo.toml'
+            - 'Cargo.lock'
 
     - name: Run cargo-audit
       if: steps.changes.outputs.cargo == 'true'
@@ -592,6 +593,7 @@ jobs:
         filters: |
           cargo:
             - 'Cargo.toml'
+            - 'Cargo.lock'
 
     - name: Run cargo-audit
       if: steps.changes.outputs.cargo == 'true'
@@ -668,6 +670,7 @@ jobs:
         filters: |
           cargo:
             - 'Cargo.toml'
+            - 'Cargo.lock'
 
     - name: Run cargo-audit
       if: steps.changes.outputs.cargo == 'true'
@@ -832,6 +835,18 @@ jobs:
       with:
         toolchain: nightly
         components: rust-src
+
+    - name: Cache produced data
+      id: cache-data
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-ci-${{ hashFiles('**/Cargo.toml') }}
 
     - name: Run cargo-careful
       run: |
