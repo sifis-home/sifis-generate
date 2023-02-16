@@ -964,7 +964,7 @@ jobs:
 
 ################################## UNSAFE CHECKS LEVEL #########################
 
-  unsafe-checks-ubuntu:
+  valgrind-ubuntu:
 
     needs: cache-level-ubuntu
 
@@ -992,6 +992,15 @@ jobs:
         cargo valgrind run -- --help
         # cargo valgrind test
 
+  careful-ubuntu:
+
+    needs: cache-level-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
@@ -1015,6 +1024,20 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
+  address-sanitizer-ubuntu:
+
+    needs: cache-level-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+
     - name: Run AddressSanitizer
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
@@ -1025,7 +1048,7 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-unknown-linux-gnu -- --help
 
-  unsafe-checks-macos:
+  careful-macos:
 
     needs: cache-level-macos
 
@@ -1057,6 +1080,20 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
+   address-sanitizer-macos:
+
+    needs: cache-level-macos
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
     - name: Run AddressSanitizer
@@ -1069,7 +1106,7 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-apple-darwin -- --help
 
-  unsafe-checks-windows:
+  careful-windows:
 
     needs: cache-level-windows
 
@@ -1105,7 +1142,7 @@ jobs:
 
   fuzzy-ubuntu:
 
-    needs: unsafe-checks-ubuntu
+    needs: [valgrind-ubuntu, careful-ubuntu, address-sanitizer-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -1130,7 +1167,7 @@ jobs:
 
   fuzzy-macos:
 
-    needs: unsafe-checks-macos
+    needs: [careful-macos, address-sanitizer-macos]
 
     runs-on: macos-latest
 
