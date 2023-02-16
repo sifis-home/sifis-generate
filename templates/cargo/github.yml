@@ -580,11 +580,11 @@ jobs:
         name: weighted-code-coverage-windows
         path: ~/wcc-output/out.json
 
-################################## DEPENDENCY CHECKS ###########################
+################################## DEPENDENCY LAYER ###########################
 
-  dependency-check-ubuntu:
+  audit-ubuntu:
 
-    needs: [build, docs]
+    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -595,6 +595,55 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
+
+    - name: Install cargo-audit
+      env:
+        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
+        AUDIT_VERSION: v0.16.0
+      run: |
+        curl -L "$AUDIT_LINK$AUDIT_VERSION/cargo-audit-x86_64-unknown-linux-musl-$AUDIT_VERSION.tgz" |
+        tar xzv -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Run cargo-audit
+      run: |
+        cargo audit
+
+  deny-ubuntu:
+
+    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install cargo-deny
+      env:
+        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
+        DENY_VERSION: 0.12.0
+      run: |
+        curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-unknown-linux-musl.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Run cargo-deny
+      run: |
+        cargo deny init
+        cargo deny check bans
+        # cargo deny check licenses
+
+  udeps-ubuntu:
+
+    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -609,39 +658,13 @@ jobs:
         curl -L "$UDEPS_LINK/$UDEPS_VERSION/cargo-udeps-$UDEPS_VERSION-x86_64-unknown-linux-gnu.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 2
 
-    - name: Install cargo-deny
-      env:
-        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
-      run: |
-        curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-unknown-linux-musl.tar.gz" |
-        tar xz -C $HOME/.cargo/bin --strip-components 1
-
-    - name: Install cargo-audit
-      env:
-        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
-        AUDIT_VERSION: v0.16.0
-      run: |
-        curl -L "$AUDIT_LINK$AUDIT_VERSION/cargo-audit-x86_64-unknown-linux-musl-$AUDIT_VERSION.tgz" |
-        tar xzv -C $HOME/.cargo/bin --strip-components 1
-
     - name: Run cargo-udeps
       run: |
         cargo +nightly udeps --all-targets
 
-    - name: Run cargo-deny
-      run: |
-        cargo deny init
-        cargo deny check bans
-        # cargo deny check licenses
+  audit-macos:
 
-    - name: Run cargo-audit
-      run: |
-        cargo audit
-
-  dependency-check-macos:
-
-    needs: [build, docs]
+    needs: [code-coverage-macos, weighted-code-coverage-macos]
 
     runs-on: macos-latest
 
@@ -652,6 +675,55 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
+
+    - name: Install cargo-audit
+      env:
+        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
+        AUDIT_VERSION: v0.16.0
+      run: |
+        curl -L "$AUDIT_LINK$AUDIT_VERSION/cargo-audit-x86_64-apple-darwin-$AUDIT_VERSION.tgz" |
+        tar xzv -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Run cargo-audit
+      run: |
+        cargo audit
+
+  deny-macos:
+
+    needs: [code-coverage-macos, weighted-code-coverage-macos]
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install cargo-deny
+      env:
+        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
+        DENY_VERSION: 0.12.0
+      run: |
+        curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-apple-darwin.tar.gz" |
+        tar xz -C $HOME/.cargo/bin --strip-components 1
+
+    - name: Run cargo-deny
+      run: |
+        cargo deny init
+        cargo deny check bans
+        # cargo deny check licenses
+
+  udeps-macos:
+
+    needs: [code-coverage-macos, weighted-code-coverage-macos]
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -666,39 +738,13 @@ jobs:
         curl -L "$UDEPS_LINK/$UDEPS_VERSION/cargo-udeps-$UDEPS_VERSION-x86_64-apple-darwin.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 2
 
-    - name: Install cargo-deny
-      env:
-        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
-      run: |
-        curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-apple-darwin.tar.gz" |
-        tar xz -C $HOME/.cargo/bin --strip-components 1
-
-    - name: Install cargo-audit
-      env:
-        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
-        AUDIT_VERSION: v0.16.0
-      run: |
-        curl -L "$AUDIT_LINK$AUDIT_VERSION/cargo-audit-x86_64-apple-darwin-$AUDIT_VERSION.tgz" |
-        tar xzv -C $HOME/.cargo/bin --strip-components 1
-
     - name: Run cargo-udeps
       run: |
         cargo +nightly udeps --all-targets
 
-    - name: Run cargo-deny
-      run: |
-        cargo deny init
-        cargo deny check bans
-        # cargo deny check licenses
+  audit-windows:
 
-    - name: Run cargo-audit
-      run: |
-        cargo audit
-
-  dependency-check-windows:
-
-    needs: [build, docs]
+    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
@@ -709,6 +755,57 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
+
+    - name: Install cargo-audit
+      env:
+        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
+        AUDIT_VERSION: v0.16.0
+      run: |
+        $AUDIT_BINARY = "cargo-audit-x86_64-pc-windows-msvc-$Env:AUDIT_VERSION.zip"
+        curl -LO "$Env:AUDIT_LINK$Env:AUDIT_VERSION/$AUDIT_BINARY"
+        7z e -y "$AUDIT_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
+
+    - name: Run cargo-audit
+      run: |
+        cargo audit
+
+  deny-windows:
+
+    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install cargo-deny
+      env:
+        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
+        DENY_VERSION: 0.12.0
+      run: |
+        $DENY_BINARY = "cargo-deny-$Env:DENY_VERSION-x86_64-pc-windows-msvc.tar.gz"
+        curl -LO "$Env:DENY_LINK/$Env:DENY_VERSION/$DENY_BINARY"
+        tar xz -C "${env:USERPROFILE}\.cargo\bin" -f $DENY_BINARY --strip-components 1
+
+    - name: Run cargo-deny
+      run: |
+        cargo deny init
+        cargo deny check bans
+        # cargo deny check licenses
+
+  udeps-windows:
+
+    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -724,43 +821,15 @@ jobs:
         curl -LO "$Env:UDEPS_LINK/$Env:UDEPS_VERSION/$UDEPS_BINARY"
         7z e -y "$UDEPS_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
 
-    - name: Install cargo-deny
-      env:
-        DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
-      run: |
-        $DENY_BINARY = "cargo-deny-$Env:DENY_VERSION-x86_64-pc-windows-msvc.tar.gz"
-        curl -LO "$Env:DENY_LINK/$Env:DENY_VERSION/$DENY_BINARY"
-        tar xz -C "${env:USERPROFILE}\.cargo\bin" -f $DENY_BINARY --strip-components 1
-
-    - name: Install cargo-audit
-      env:
-        AUDIT_LINK: https://github.com/rustsec/rustsec/releases/download/cargo-audit%2F
-        AUDIT_VERSION: v0.16.0
-      run: |
-        $AUDIT_BINARY = "cargo-audit-x86_64-pc-windows-msvc-$Env:AUDIT_VERSION.zip"
-        curl -LO "$Env:AUDIT_LINK$Env:AUDIT_VERSION/$AUDIT_BINARY"
-        7z e -y "$AUDIT_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
-
     - name: Run cargo-udeps
       run: |
         cargo +nightly udeps --all-targets
-
-    - name: Run cargo-deny
-      run: |
-        cargo deny init
-        cargo deny check bans
-        # cargo deny check licenses
-
-    - name: Run cargo-audit
-      run: |
-        cargo audit
 
 ################################## CACHE LEVEL #################################
 
   cache-level-ubuntu:
 
-    needs: [code-coverage-ubuntu, static-code-analysis-ubuntu, weighted-code-coverage-ubuntu, dependency-check-ubuntu]
+    needs: [audit-ubuntu, deny-ubuntu, udeps-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -792,7 +861,7 @@ jobs:
 
   cache-level-macos:
 
-    needs: [code-coverage-macos, weighted-code-coverage-macos, dependency-check-macos]
+    needs: [audit-macos, deny-macos, udeps-macos]
 
     runs-on: macos-latest
 
@@ -919,7 +988,7 @@ jobs:
 
   unsafe-checks-windows:
 
-    needs: [code-coverage-windows, static-code-analysis-windows, weighted-code-coverage-windows, dependency-check-windows]
+    needs: [audit-windows, deny-windows, udeps-windows]
 
     runs-on: windows-latest
 
