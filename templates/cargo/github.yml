@@ -588,7 +588,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -611,7 +612,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -650,7 +652,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -687,7 +690,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -710,7 +714,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -749,7 +754,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -786,7 +792,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -809,7 +816,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
@@ -849,7 +857,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: dorny/paths-filter@v2
+    - name: Check dependencies changes
+      uses: dorny/paths-filter@v2
       id: changes
       with:
         filters: |
