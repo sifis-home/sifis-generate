@@ -75,7 +75,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install rust-code-analysis
+    - name: Install rust-code-analysis on Ubuntu
       if: matrix.conf == 'ubuntu'
       run: |
         mkdir -p $HOME/.local/bin
@@ -83,7 +83,7 @@ jobs:
         tar xz -C $HOME/.local/bin
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Install rust-code-analysis
+    - name: Install rust-code-analysis on Windows
       if: matrix.conf == 'windows'
       run: |
         mkdir -p $HOME/bin
@@ -567,7 +567,7 @@ jobs:
 
   audit-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -590,7 +590,7 @@ jobs:
 
   deny-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -629,7 +629,7 @@ jobs:
 
   udeps-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -765,7 +765,7 @@ jobs:
 
   audit-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
@@ -788,7 +788,7 @@ jobs:
 
   deny-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
@@ -828,7 +828,7 @@ jobs:
 
   udeps-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
@@ -1037,6 +1037,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     - name: Run AddressSanitizer
       env:
@@ -1080,7 +1081,7 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
-   address-sanitizer-macos:
+  address-sanitizer-macos:
 
     needs: cache-level-macos
 
@@ -1093,6 +1094,7 @@ jobs:
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
+        components: rust-src
 
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
