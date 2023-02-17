@@ -4,9 +4,19 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'crates/**'
+      - 'fuzz/**'
+      - '.github/**'
   pull_request:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'crates/**'
+      - 'fuzz/**'
+      - '.github/**'
 
 jobs:
 
