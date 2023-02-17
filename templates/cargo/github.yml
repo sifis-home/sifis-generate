@@ -4,9 +4,23 @@ on:
   push:
     branches:
       - {{ branch }}
+    paths:
+      - 'src/**'
+      - 'crates/**'
+      - 'fuzz/**'
+      - '.github/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   pull_request:
     branches:
       - {{ branch }}
+    paths:
+      - 'src/**'
+      - 'crates/**'
+      - 'fuzz/**'
+      - '.github/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
 
 jobs:
 
