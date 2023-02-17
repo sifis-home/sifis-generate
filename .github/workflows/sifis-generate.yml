@@ -51,11 +51,62 @@ jobs:
         clippy_flags: --all-targets -- -D warnings
         reporter: github-pr-review
 
+  static-code-analysis:
+
+    env:
+      RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
+      RCA_VERSION: v0.0.25
+
+    strategy:
+      matrix:
+        conf:
+          - ubuntu
+          - windows
+        include:
+          - conf: ubuntu
+            platform: ubuntu-latest
+            dir: $PWD
+          - conf: windows
+            platform: windows-latest
+            dir: src/ # FIXME Broken on Windows with absolute paths, so using src/ as path for now
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install rust-code-analysis
+      if: matrix.conf == 'ubuntu'
+      run: |
+        mkdir -p $HOME/.local/bin
+        curl -L "$RCA_LINK/$RCA_VERSION/rust-code-analysis-linux-cli-x86_64.tar.gz" |
+        tar xz -C $HOME/.local/bin
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install rust-code-analysis
+      if: matrix.conf == 'windows'
+      run: |
+        mkdir -p $HOME/bin
+        curl -LO "$Env:RCA_LINK/$env:RCA_VERSION/rust-code-analysis-win-cli-x86_64.zip"
+        7z e -y "rust-code-analysis-win-cli-x86_64.zip" -o"$HOME/bin"
+        echo "$HOME/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Run rust-code-analysis
+      run: |
+        mkdir $HOME/rca-json
+        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p ${{ matrix.dir }}
+
+    - name: Upload rust-code-analysis json
+      uses: actions/upload-artifact@v3
+      with:
+        name: rca-json-${{ matrix.conf }}
+        path: ~/rca-json
+
 ################################## BUILD AND DOCS LAYER ########################
 
   build:
 
-    needs: [reuse, clippy-rustfmt]
+    needs: [reuse, clippy-rustfmt, static-code-analysis]
 
     strategy:
       matrix:
@@ -76,7 +127,7 @@ jobs:
 
   docs:
 
-    needs: [reuse, clippy-rustfmt]
+    needs: [reuse, clippy-rustfmt, static-code-analysis]
 
     strategy:
       matrix:
@@ -95,73 +146,7 @@ jobs:
     - name: Generate docs
       run: cargo doc --verbose --no-deps
 
-################################## CODE LAYER ##################################
-
-
-################################## CODE ANALYSIS ###############################
-
-  static-code-analysis-ubuntu:
-
-    needs: [build, docs]
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install rust-code-analysis
-      env:
-        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.25
-      run: |
-        mkdir -p $HOME/.local/bin
-        curl -L "$RCA_LINK/$RCA_VERSION/rust-code-analysis-linux-cli-x86_64.tar.gz" |
-        tar xz -C $HOME/.local/bin
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-    - name: Run rust-code-analysis
-      run: |
-        mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p $PWD
-
-    - name: Upload rust-code-analysis json
-      uses: actions/upload-artifact@v3
-      with:
-        name: rca-json-ubuntu
-        path: ~/rca-json
-
-  static-code-analysis-windows:
-
-    needs: [build, docs]
-
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install rust-code-analysis
-      env:
-        RCA_LINK: https://github.com/mozilla/rust-code-analysis/releases/download
-        RCA_VERSION: v0.0.25
-      run: |
-        mkdir -p $HOME/bin
-        curl -LO "$Env:RCA_LINK/$env:RCA_VERSION/rust-code-analysis-win-cli-x86_64.zip"
-        7z e -y "rust-code-analysis-win-cli-x86_64.zip" -o"$HOME/bin"
-        echo "$HOME/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-    - name: Run rust-code-analysis
-      run: |
-        # FIXME Broken on Windows with absolute paths, so using src/ as path for now
-        mkdir $HOME/rca-json
-        rust-code-analysis-cli --metrics -O json --pr -o "$HOME/rca-json" -p src/
-
-    - name: Upload rust-code-analysis json
-      uses: actions/upload-artifact@v3
-      with:
-        name: rca-json-windows
-        path: ~/rca-json
-
-################################## CODE COVERAGE ###############################
+################################## CODE COVERAGE LAYER ##################################
 
   code-coverage-ubuntu:
 
@@ -307,8 +292,6 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         files: lcov.info
-
-################################## WEIGHTED CODE COVERAGE ######################
 
   weighted-code-coverage-ubuntu:
 
@@ -503,7 +486,7 @@ jobs:
 
   audit-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -526,19 +509,29 @@ jobs:
 
   deny-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust stable
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
 
     - name: Install cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
         DENY_VERSION: 0.12.0
@@ -547,6 +540,7 @@ jobs:
         tar xz -C $HOME/.cargo/bin --strip-components 1
 
     - name: Run cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo deny init
         cargo deny check bans
@@ -554,19 +548,29 @@ jobs:
 
   udeps-ubuntu:
 
-    needs: [static-code-analysis-ubuntu, code-coverage-ubuntu, weighted-code-coverage-ubuntu]
+    needs: [code-coverage-ubuntu, weighted-code-coverage-ubuntu]
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust nightly
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
     - name: Install cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
         UDEPS_VERSION: v0.1.28
@@ -575,6 +579,7 @@ jobs:
         tar xz -C $HOME/.cargo/bin --strip-components 2
 
     - name: Run cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo +nightly udeps --all-targets
 
@@ -610,12 +615,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust stable
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
 
     - name: Install cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
         DENY_VERSION: 0.12.0
@@ -624,6 +639,7 @@ jobs:
         tar xz -C $HOME/.cargo/bin --strip-components 1
 
     - name: Run cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo deny init
         cargo deny check bans
@@ -638,12 +654,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust nightly
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
     - name: Install cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
         UDEPS_VERSION: v0.1.28
@@ -652,12 +678,13 @@ jobs:
         tar xz -C $HOME/.cargo/bin --strip-components 2
 
     - name: Run cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo +nightly udeps --all-targets
 
   audit-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
@@ -680,19 +707,29 @@ jobs:
 
   deny-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust stable
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
 
     - name: Install cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
         DENY_VERSION: 0.12.0
@@ -702,6 +739,7 @@ jobs:
         tar xz -C "${env:USERPROFILE}\.cargo\bin" -f $DENY_BINARY --strip-components 1
 
     - name: Run cargo-deny
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo deny init
         cargo deny check bans
@@ -709,19 +747,29 @@ jobs:
 
   udeps-windows:
 
-    needs: [static-code-analysis-windows, code-coverage-windows, weighted-code-coverage-windows]
+    needs: [code-coverage-windows, weighted-code-coverage-windows]
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v3
 
+    - uses: dorny/paths-filter@v2
+      id: changes
+      with:
+        filters: |
+          cargo:
+            - 'Cargo.toml'
+            - 'Cargo.lock'
+
     - name: Install Rust nightly
+      if: steps.changes.outputs.cargo == 'true'
       uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: nightly
 
     - name: Install cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
         UDEPS_VERSION: v0.1.28
@@ -731,6 +779,7 @@ jobs:
         7z e -y "$UDEPS_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
 
     - name: Run cargo-udeps
+      if: steps.changes.outputs.cargo == 'true'
       run: |
         cargo +nightly udeps --all-targets
 
@@ -834,7 +883,7 @@ jobs:
 
 ################################## UNSAFE CHECKS LEVEL #########################
 
-  unsafe-checks-ubuntu:
+  valgrind-ubuntu:
 
     needs: cache-level-ubuntu
 
@@ -862,6 +911,15 @@ jobs:
         cargo valgrind run -- --help
         # cargo valgrind test
 
+  careful-ubuntu:
+
+    needs: cache-level-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
       with:
@@ -885,6 +943,21 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
+  address-sanitizer-ubuntu:
+
+    needs: cache-level-ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+        components: rust-src
+
     - name: Run AddressSanitizer
       env:
         RUSTFLAGS: -Zsanitizer=address -Copt-level=3
@@ -895,7 +968,7 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-unknown-linux-gnu -- --help
 
-  unsafe-checks-macos:
+  careful-macos:
 
     needs: cache-level-macos
 
@@ -927,6 +1000,21 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
+  address-sanitizer-macos:
+
+    needs: cache-level-macos
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust nightly
+      uses: dtolnay/rust-toolchain@nightly
+      with:
+        toolchain: nightly
+        components: rust-src
+
     # Usage of the `help` command as base command, please replace it
     # with the effective command that AddressSanitizer has to analyze
     - name: Run AddressSanitizer
@@ -939,7 +1027,7 @@ jobs:
       # with the effective command that AddressSanitizer has to analyze
       # run: cargo run -Zbuild-std --target x86_64-apple-darwin -- --help
 
-  unsafe-checks-windows:
+  careful-windows:
 
     needs: cache-level-windows
 
@@ -975,7 +1063,7 @@ jobs:
 
   fuzzy-ubuntu:
 
-    needs: unsafe-checks-ubuntu
+    needs: [valgrind-ubuntu, careful-ubuntu, address-sanitizer-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -1000,7 +1088,7 @@ jobs:
 
   fuzzy-macos:
 
-    needs: unsafe-checks-macos
+    needs: [careful-macos, address-sanitizer-macos]
 
     runs-on: macos-latest
 
