@@ -24,6 +24,7 @@ pytest = "^6.2.5"
 black = "^21.12b0"
 pre-commit = "^2.16.0"
 isort = "^5.10.1"
+coverage = {extras = ["toml"], version = "^7.1.0"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -70,3 +71,8 @@ disable = [
 [tool.pylint.miscellaneous]
 notes = ["FIXME", "TODO"]
 
+[tool.coverage.run]
+omit = [".*", "*/site-packages/*"]
+
+[tool.coverage.report]
+fail_under = 60
