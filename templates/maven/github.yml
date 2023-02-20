@@ -51,6 +51,16 @@ jobs:
           architecture: x64
 
       - name: Run integration tests
+        bash: shell
         run: |
-           mvn clean compile
+           mvn clean compile \
+           org.jacoco:jacoco-maven-plugin:0.8.6:prepare-agent \
+           install org.jacoco:jacoco-maven-plugin:0.8.6:report
 
+      - name: Deploy Jacoco code coverage reports to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: true
+          folder: target/site/jacoco
+          target-folder: reports
+          branch: gh-pages
