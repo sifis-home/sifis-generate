@@ -109,6 +109,7 @@ jobs:
            install org.jacoco:jacoco-maven-plugin:0.8.6:report
 
       - name: Deploy Jacoco code coverage reports to gh-pages
+        if: matrix.java-version == '15.0.x'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           clean: true
