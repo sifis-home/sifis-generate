@@ -12,6 +12,7 @@ static MAVEN_TEMPLATES: &[(&str, &str)] = &builtin_templates!["maven" =>
     ("java.entry", "Entry.java"),
     ("java.example", "Example.java"),
     ("xml.pom", "pom.xml"),
+    ("xml.checkstyle", "checkstyle.xml"),
     ("md.README", "README.md"),
     ("ci.github", "github.yml")
 ];
@@ -62,6 +63,7 @@ impl<'a> Maven<'a> {
 
         // All the files in the root of the projects
         template_files.insert(root.join("pom.xml"), "xml.pom");
+        template_files.insert(root.join("checkstyle.xml"), "xml.checkstyle");
         template_files.insert(root.join("README.md"), "md.README");
         template_files.insert(root.join("LICENSE.md"), "build.license");
 
