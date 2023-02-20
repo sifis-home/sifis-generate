@@ -19,7 +19,7 @@ tests and implement further checks.
 | - | - | - | - | - | - | - | - | - | - |
 | meson | C / C++ | provided | :x: | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | poetry | Python | provided | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :heavy_check_mark: | :white_check_mark: | :heavy_check_mark: |
-| maven | Java | provided | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :white_check_mark: | :heavy_check_mark: |
+| maven | Java | provided | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:  | :white_check_mark: | :heavy_check_mark: |
 | cargo | Rust | offloaded | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | yarn | Javascript / Typescript| offloaded | :x: | :heavy_check_mark:  | :x: | :x: | :x: | :white_check_mark: | :heavy_check_mark:  |
 
