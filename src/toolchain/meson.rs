@@ -23,7 +23,6 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
     ("docker.compose", "docker-compose.yml"),
     ("run.tests", "run_tests.sh"),
     ("md.README", "README.md"),
-    ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
 
@@ -99,7 +98,6 @@ impl Meson {
         template_files.insert(root.join("run_tests.sh"), "run.tests");
 
         // Continuous Integration
-        template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
         template_files.insert(github.join(format!("{name}.yml")), "ci.github");
 
         (template_files, vec![root, cli, lib, tests, github])

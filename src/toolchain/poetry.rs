@@ -15,7 +15,6 @@ static POETRY_TEMPLATES: &[(&str, &str)] = &builtin_templates!["poetry" =>
     ("py.__init__", "__init__.py"),
     ("py.__main__", "__main__.py"),
     ("py.test", "test_sum.py"),
-    ("ci.gitlab", ".gitlab-ci.yml"),
     ("ci.github", "github.yml")
 ];
 
@@ -71,7 +70,6 @@ impl Poetry {
         template_files.insert(tests.join("test_sum.py"), "py.test");
 
         // Continuous integration files
-        template_files.insert(root.join(".gitlab-ci.yml"), "ci.gitlab");
         template_files.insert(github.join(format!("{name}.yml")), "ci.github");
 
         (template_files, vec![root, main, data, tests, github])
