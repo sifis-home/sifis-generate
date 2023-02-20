@@ -68,6 +68,16 @@ $ sifis-generate poetry [--license LICENSE --name NAME --branch GITHUB_BRANCH] p
 $ sifis-generate yarn [--license LICENSE --name NAME --branch GITHUB_BRANCH] project-path
 ```
 
+It is possible to save a `config.toml` in `${XDG_CONFIG_HOME}/sifis-generate` with overrides for all the default and optional values, e.g:
+
+``` toml
+[default]
+license = "BSD-3-Clause"
+
+[meson]
+kind = "c++"
+```
+
 ## License
 
 Released under the [MIT License](LICENSE).

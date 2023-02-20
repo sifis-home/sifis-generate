@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use minijinja::value::Value;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     builtin_templates, compute_template, define_license, define_name, BuildTemplate, CreateProject,
@@ -27,7 +28,7 @@ static MESON_TEMPLATES: &[(&str, &str)] = &builtin_templates!["meson" =>
 ];
 
 /// Kind of a meson project.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ProjectKind {
     /// C-language project
     C,
