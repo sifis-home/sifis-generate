@@ -631,7 +631,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
+        DENY_VERSION: 0.13.7
       run: |
         curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-unknown-linux-musl.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 1
@@ -671,7 +671,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
-        UDEPS_VERSION: v0.1.28
+        UDEPS_VERSION: v0.1.35
       run: |
         curl -L "$UDEPS_LINK/$UDEPS_VERSION/cargo-udeps-$UDEPS_VERSION-x86_64-unknown-linux-gnu.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 2
@@ -733,7 +733,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
+        DENY_VERSION: 0.13.7
       run: |
         curl -L "$DENY_LINK/$DENY_VERSION/cargo-deny-$DENY_VERSION-x86_64-apple-darwin.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 1
@@ -773,7 +773,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
-        UDEPS_VERSION: v0.1.28
+        UDEPS_VERSION: v0.1.35
       run: |
         curl -L "$UDEPS_LINK/$UDEPS_VERSION/cargo-udeps-$UDEPS_VERSION-x86_64-apple-darwin.tar.gz" |
         tar xz -C $HOME/.cargo/bin --strip-components 2
@@ -835,7 +835,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         DENY_LINK: https://github.com/EmbarkStudios/cargo-deny/releases/download
-        DENY_VERSION: 0.12.0
+        DENY_VERSION: 0.13.7
       run: |
         $DENY_BINARY = "cargo-deny-$Env:DENY_VERSION-x86_64-pc-windows-msvc.tar.gz"
         curl -LO "$Env:DENY_LINK/$Env:DENY_VERSION/$DENY_BINARY"
@@ -876,7 +876,7 @@ jobs:
       if: steps.changes.outputs.cargo == 'true'
       env:
         UDEPS_LINK: https://github.com/est31/cargo-udeps/releases/download
-        UDEPS_VERSION: v0.1.28
+        UDEPS_VERSION: v0.1.35
       run: |
         $UDEPS_BINARY = "cargo-udeps-$Env:UDEPS_VERSION-x86_64-pc-windows-msvc.zip"
         curl -LO "$Env:UDEPS_LINK/$Env:UDEPS_VERSION/$UDEPS_BINARY"
