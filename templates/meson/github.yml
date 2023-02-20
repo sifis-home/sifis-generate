@@ -57,7 +57,7 @@ jobs:
 
     - name: Export the code coverage as xml file
       run: |
-        ninja coverage-xml -C .build-directory-coverage
+        ninja coverage -C .build-directory-coverage
 
     - name: Create an address sanitizer instrumented build directory
       run: |
@@ -67,12 +67,12 @@ jobs:
       run: |
         meson test -C .build-directory-asan
 
-    - name: Update coverage.xml
+    - name: Update coverage.info
       uses: actions/upload-artifact@v2
       with:
         name: coverage
         path: |
-          .build-directory-coverage/meson-logs/coverage.xml
+          .build-directory-coverage/meson-logs/coverage.info
 
   docker-compose-tests:
 
