@@ -1094,7 +1094,7 @@ jobs:
         tar xz -C $HOME/.cargo/bin
 
     - name: Run cargo-fuzz
-      run: cargo fuzz build
+      run: cargo fuzz build --target x86_64-unknown-linux-gnu
 
   fuzzy-macos:
 
