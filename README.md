@@ -17,13 +17,13 @@ tests and implement further checks.
 
 | Build system | Languages | Project template | CI style checks | CI build | CI test | CI coverage upload | CI static analysis | CI dynamic analisys | CI license checks |
 | - | - | - | - | - | - | - | - | - | - |
-| meson | C / C++ | provided | no | yes | yes | yes | yes | no | yes (Asan) | yes (REUSE) |
-| poetry | Python | provided | yes (blake, isort) | yes | yes | no | yes (pylint) | no | yes (REUSE) |
-| maven | Java | provided | no | yes | yes | no | no | no | yes (REUSE) |
-| cargo | Rust | offloaded | yes (rustfmt) | yes | yes | yes | yes (clippy, r-c-a) | yes (valgrind, careful, asan) | yes (REUSE) |
-| yarn | Javascript / Typescript| offloaded | no | yes | no | no | no | no | yes (REUSE) |
+| meson | C / C++ | provided | :x: | :heavy_check_mark: | :heavy_check_mark: |:heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| poetry | Python | provided | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :heavy_check_mark: | :white_check_mark: | :heavy_check_mark: |
+| maven | Java | provided | :x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :white_check_mark: | :heavy_check_mark: |
+| cargo | Rust | offloaded | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| yarn | Javascript / Typescript| offloaded | :x: | :heavy_check_mark:  | :x: | :x: | :x: | :white_check_mark: | :heavy_check_mark:  |
 
-__*__ sifis-generate provides opinionated defaults if the build system does not offer a mean to autogenerate a project itself.
+:white_check_mark:: Not necessary for the considered language
 
 ## Commands
 
