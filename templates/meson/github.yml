@@ -19,6 +19,22 @@ jobs:
     - name: REUSE Compliance Check
       uses: fsfe/reuse-action@v1
 
+  clang-format:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run clang-format style check for C/C++/Protobuf programs
+      uses: jidicula/clang-format-action@v4.10.2
+      with:
+        clang-format-version: '13'
+        check-path: 'src'
+        # The fallback style for clang-format.
+        # To be used when no .clang-format file exists in a repository.
+        fallback-style: 'llvm'
+
   static-code-analysis:
 
     env:
@@ -50,7 +66,7 @@ jobs:
 
   tests:
 
-    needs: [reuse, static-code-analysis]
+    needs: [reuse, clang-format, static-code-analysis]
 
     strategy:
       matrix:
@@ -105,7 +121,7 @@ jobs:
 
   docker-compose-tests:
 
-    needs: [reuse, static-code-analysis]
+    needs: [reuse, clang-format, static-code-analysis]
 
     runs-on: ubuntu-latest
 
