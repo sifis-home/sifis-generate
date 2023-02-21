@@ -22,7 +22,7 @@ python = ">=3.9,<3.11"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 black = "^21.12b0"
-pre-commit = "^2.16.0"
+pre-commit = "^3.0.4"
 isort = "^5.10.1"
 coverage = {extras = ["toml"], version = "^7.1.0"}
 
