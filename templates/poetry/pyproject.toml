@@ -73,7 +73,7 @@ disable = [
 notes = ["FIXME", "TODO"]
 
 [tool.ruff]
-line-length = 88
+line-length = 79
 select = [
     "F401",
     "F403",
