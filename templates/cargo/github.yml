@@ -212,9 +212,11 @@ jobs:
 
     - name: Get total coverage
       run: |
+        # Remove lcov.info file to avoid function duplications
+        rm -rf lcov.info
         grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
               --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
-              --ignore "../*"  > covdir.json
+              --ignore "../*" -o covdir.json
 
     - name: Evaluate code coverage value
       shell: bash
@@ -287,9 +289,11 @@ jobs:
 
     - name: Get total coverage
       run: |
+        # Remove lcov.info file to avoid function duplications
+        rm -rf lcov.info
         grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
               --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
-              --ignore "../*"  > covdir.json
+              --ignore "../*" -o covdir.json
 
     - name: Evaluate code coverage value
       shell: bash
@@ -363,9 +367,11 @@ jobs:
 
     - name: Get total coverage
       run: |
+        # Remove lcov.info file to avoid function duplications
+        rm -fo lcov.info
         grcov . --binary-path ./target/debug/ -s . -t covdir --branch `
               --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" `
-              --ignore "../*"  > covdir.json
+              --ignore "../*" -o covdir.json
 
     - name: Evaluate code coverage value
       shell: bash
@@ -438,7 +444,7 @@ jobs:
 
     - name: Run grcov
       run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
+        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN -o coveralls.json
 
     - name: Run weighted-code-coverage
       run: |
@@ -501,7 +507,7 @@ jobs:
 
     - name: Run grcov
       run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
+        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN -o coveralls.json
 
     - name: Run weighted-code-coverage
       run: |
@@ -564,7 +570,7 @@ jobs:
 
     - name: Run grcov
       run: |
-        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN > coveralls.json
+        grcov . --binary-path ./target/debug/ -t coveralls -s . --token YOUR_COVERALLS_TOKEN -o coveralls.json
 
     - name: Run weighted-code-coverage
       run: |
