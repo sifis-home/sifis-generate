@@ -21,9 +21,10 @@ python = ">=3.9,<3.11"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
-black = "^21.12b0"
 pre-commit = "^3.0.4"
+black = "^21.12b0"
 isort = "^5.10.1"
+ruff = "^0.0.63"
 coverage = {extras = ["toml"], version = "^7.1.0"}
 
 [build-system]
@@ -70,6 +71,13 @@ disable = [
 
 [tool.pylint.miscellaneous]
 notes = ["FIXME", "TODO"]
+
+[tool.ruff]
+line-length = 88
+select = [
+    "F401",
+    "F403",
+]
 
 [tool.coverage.run]
 omit = [".*", "*/site-packages/*"]
