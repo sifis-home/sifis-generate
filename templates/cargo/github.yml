@@ -368,7 +368,7 @@ jobs:
     - name: Get total coverage
       run: |
         # Remove lcov.info file to avoid function duplications
-        rm -fo lcov.info
+        Remove-Item -fo lcov.info
         grcov . --binary-path ./target/debug/ -s . -t covdir --branch `
               --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" `
               --ignore "../*" -o covdir.json
