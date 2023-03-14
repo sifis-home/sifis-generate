@@ -538,7 +538,7 @@ jobs:
       env:
         GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
         GRCOV_VERSION: v0.8.13
-        GRCOV_BINARY: grcov-x86_64-pc-windows-msvc.zip 
+        GRCOV_BINARY: grcov-x86_64-pc-windows-msvc.zip
       run: |
         curl -LO "$Env:GRCOV_LINK/$Env:GRCOV_VERSION/$Env:GRCOV_BINARY"
         7z e -y "$Env:GRCOV_BINARY" -o"${env:USERPROFILE}\.cargo\bin"
@@ -893,7 +893,7 @@ jobs:
       run: |
         cargo +nightly udeps --all-targets
 
-################################## CACHE LEVEL #################################
+################################## CACHE LAYER #################################
 
   cache-level-ubuntu:
 
@@ -991,7 +991,7 @@ jobs:
       run: |
         cargo install cargo-careful
 
-################################## UNSAFE CHECKS LEVEL #########################
+################################## UNSAFE CHECKS LAYER #########################
 
   valgrind-ubuntu:
 
@@ -1169,7 +1169,7 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
-################################## FUZZY LEVEL #################################
+################################## FUZZY LAYER #################################
 
   fuzzy-ubuntu:
 
