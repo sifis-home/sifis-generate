@@ -893,109 +893,11 @@ jobs:
       run: |
         cargo +nightly udeps --all-targets
 
-################################## CACHE LAYER #################################
-
-  cache-level-ubuntu:
-
-    needs: [audit-ubuntu, deny-ubuntu, udeps-ubuntu]
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        components: rust-src
-
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
-
-    - name: Install cargo-careful
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-careful
-
-  cache-level-macos:
-
-    needs: [audit-macos, deny-macos, udeps-macos]
-
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        components: rust-src
-
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
-
-    - name: Install cargo-careful
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-careful
-
-  cache-level-windows:
-
-    needs: [audit-windows, deny-windows, udeps-windows]
-
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install Rust nightly
-      uses: dtolnay/rust-toolchain@nightly
-      with:
-        toolchain: nightly
-        components: rust-src
-
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
-
-    - name: Install cargo-careful
-      if: steps.cache-data.outputs.cache-hit != 'true'
-      run: |
-        cargo install cargo-careful
-
 ################################## UNSAFE CHECKS LAYER #########################
 
   valgrind-ubuntu:
 
-    needs: cache-level-ubuntu
+    needs: [audit-ubuntu, deny-ubuntu, udeps-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -1023,7 +925,7 @@ jobs:
 
   careful-ubuntu:
 
-    needs: cache-level-ubuntu
+    needs: [audit-ubuntu, deny-ubuntu, udeps-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -1036,17 +938,13 @@ jobs:
         toolchain: nightly
         components: rust-src
 
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+    - name: Install cargo-careful
+      env:
+        CAREFUL_LINK: https://github.com/RalfJung/cargo-careful/releases/download
+        CAREFUL_VERSION: 0.3.3
+      run: |
+        curl -LO "$CAREFUL_LINK/v$CAREFUL_VERSION/cargo-careful.x86_64-unknown-linux-musl" \
+        --output-dir $HOME/.cargo/bin
 
     - name: Run cargo-careful
       run: |
@@ -1055,7 +953,7 @@ jobs:
 
   address-sanitizer-ubuntu:
 
-    needs: cache-level-ubuntu
+    needs: [audit-ubuntu, deny-ubuntu, udeps-ubuntu]
 
     runs-on: ubuntu-latest
 
@@ -1080,7 +978,7 @@ jobs:
 
   careful-macos:
 
-    needs: cache-level-macos
+    needs: [audit-macos, deny-macos, udeps-macos]
 
     runs-on: macos-latest
 
@@ -1093,17 +991,13 @@ jobs:
         toolchain: nightly
         components: rust-src
 
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+    - name: Install cargo-careful
+      env:
+        CAREFUL_LINK: https://github.com/RalfJung/cargo-careful/releases/download
+        CAREFUL_VERSION: 0.3.3
+      run: |
+        curl -LO "$CAREFUL_LINK/v$CAREFUL_VERSION/cargo-careful.x86_64-apple-darwin" \
+        --output-dir $HOME/.cargo/bin
 
     - name: Run cargo-careful
       run: |
@@ -1112,7 +1006,7 @@ jobs:
 
   address-sanitizer-macos:
 
-    needs: cache-level-macos
+    needs: [audit-macos, deny-macos, udeps-macos]
 
     runs-on: macos-latest
 
@@ -1139,7 +1033,7 @@ jobs:
 
   careful-windows:
 
-    needs: cache-level-windows
+    needs: [audit-windows, deny-windows, udeps-windows]
 
     runs-on: windows-latest
 
@@ -1152,17 +1046,13 @@ jobs:
         toolchain: nightly
         components: rust-src
 
-    - name: Cache produced data
-      id: cache-data
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: {{ '${{ runner.os }}' }}-cargo-ci-{{ "${{ hashFiles('**/Cargo.toml') }}" }}
+    - name: Install cargo-careful
+      env:
+        CAREFUL_LINK: https://github.com/RalfJung/cargo-careful/releases/download
+        CAREFUL_VERSION: 0.3.3
+      run: |
+        curl -LO "$Env:CAREFUL_LINK/v$Env:CAREFUL_VERSION/cargo-careful.exe" `
+        --output-dir "${env:USERPROFILE}\.cargo\bin"
 
     - name: Run cargo-careful
       run: |
