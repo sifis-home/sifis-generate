@@ -36,7 +36,7 @@ impl CreateCi for Yarn {
 impl Yarn {
     /// Creates a new `Yarn` instance.
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 
     fn project_structure(

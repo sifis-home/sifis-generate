@@ -40,7 +40,7 @@ impl CreateProject for Poetry {
 impl Poetry {
     /// Creates a new `Poetry` instance.
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 
     fn project_structure(

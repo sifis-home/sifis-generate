@@ -39,7 +39,7 @@ impl CreateCi for Cargo {
 impl Cargo {
     /// Creates a new `Cargo` instance.
     pub fn new() -> Self {
-        Self::default()
+        Self
     }
 
     fn project_structure(
