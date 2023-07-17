@@ -181,7 +181,7 @@ fn build_environment(templates: &'static [(&'static str, &'static str)]) -> Envi
     let mut environment = Environment::new();
     for (name, src) in templates {
         environment
-            .add_template(*name, *src)
+            .add_template(name, src)
             .expect("Internal error, built-in template");
     }
 
