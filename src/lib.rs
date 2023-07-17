@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Result};
 use minijinja::value::Value;
-use minijinja::{Environment, Source};
+use minijinja::Environment;
 use tracing::debug;
 
 use filters::*;
@@ -45,17 +45,17 @@ struct SifisTemplate {
     context: HashMap<&'static str, Value>,
     files: HashMap<PathBuf, &'static str>,
     dirs: Vec<PathBuf>,
-    source: Source,
+    env: Environment<'static>,
 }
 
 impl SifisTemplate {
     fn render(self) -> Result<()> {
-        let mut env = Environment::new();
+        //let mut env = Environment::new();
         let SifisTemplate {
             context,
             files,
             dirs,
-            source,
+            mut env,
         } = self;
 
         // Create dirs
@@ -64,7 +64,6 @@ impl SifisTemplate {
             create_dir_all(dir)?
         }
 
-        env.set_source(source);
         env.add_filter("comment_license", comment_license);
         env.add_filter("hypens_to_underscores", hypens_to_underscores);
 
@@ -109,7 +108,7 @@ impl SifisTemplate {
         self.context
             .insert("license", Value::from_serializable(&license_ctx));
 
-        self.source.add_template("build.license", license.text())?;
+        self.env.add_template("build.license", license.text())?;
 
         Ok(())
     }
@@ -136,7 +135,7 @@ impl SifisTemplate {
         self.context
             .insert("reuse", Value::from_serializable(&reuse));
 
-        self.source.add_template("dep5.reuse", REUSE_TEMPLATE)?;
+        self.env.add_template("dep5.reuse", REUSE_TEMPLATE)?;
 
         Ok(())
     }
@@ -167,26 +166,26 @@ trait BuildTemplate {
     ) -> SifisTemplate {
         let (files, dirs, context) =
             self.define(project_path, project_name, license, github_branch);
-        let source = build_source(Self::get_templates());
+        let env = build_environment(Self::get_templates());
 
         SifisTemplate {
             context,
             files,
             dirs,
-            source,
+            env,
         }
     }
 }
 
-fn build_source(templates: &[(&str, &str)]) -> Source {
-    let mut source = Source::new();
+fn build_environment(templates: &'static [(&'static str, &'static str)]) -> Environment<'static> {
+    let mut environment = Environment::new();
     for (name, src) in templates {
-        source
+        environment
             .add_template(*name, *src)
             .expect("Internal error, built-in template");
     }
 
-    source
+    environment
 }
 
 pub(crate) fn define_name<'a>(project_name: &'a str, project_path: &'a Path) -> Result<&'a str> {
