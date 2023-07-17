@@ -12,10 +12,10 @@ homepage = "https://github.com/sifis-home/sifis-generate"
 
 [dependencies]
 anyhow = "1"
-clap = { version = "4", features = ["derive"] }
-dirs = "4.0.0"
-figment = { version = "0.10.8", features = ["toml"] }
-license = "3"
+clap = { version = "^4.3", features = ["derive"] }
+dirs = "^5.0"
+figment = { version = "^0.10", features = ["toml"] }
+license = "^3.1"
 minijinja = "^1.0"
 serde = { version = "1", features = ["derive"] }
 textwrap = "0.16"
