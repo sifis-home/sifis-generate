@@ -13,7 +13,3 @@ repos:
   rev: v0.0.63
   hooks:
   - id: lint
-- repo: https://github.com/pycqa/pylint
-  rev: v2.16.2
-  hooks:
-  - id: pylint
