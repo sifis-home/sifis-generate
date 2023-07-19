@@ -96,11 +96,16 @@ jobs:
       run: |
         poetry install
 
-    - name: Run tests and compute code coverage
+    - name: Run tests and print code coverage report
       run: |
         poetry run coverage run -m pytest
         poetry run coverage report -m
 
+    - name: Create Codecov report
+      run: |
+        poetry run coverage lcov
+
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3
-
+      with:
+        files: coverage.lcov
