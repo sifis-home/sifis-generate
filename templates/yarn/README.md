@@ -11,7 +11,7 @@
 <!-- Links -->
 [actions]: https://github.com/<your-account>/{{ name }}/actions
 [codecov]: https://codecov.io/gh/<your-account>/{{ name }}
-[license]: LICENSE
+[license]: LICENSES/{{ license_id }}.txt
 
 <!-- Badges -->
 [actions badge]: https://github.com/<your-account>/{{ name }}/workflows/{{ name }}/badge.svg
