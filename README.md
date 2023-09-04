@@ -83,6 +83,10 @@ kind = "c++"
 Will override the default `license` and `meson.kind` configuration items. The cli arguments take priority over the built-in defaults and
 the `config.toml` overrides.
 
+``` sh
+$ sifis-generate meson -k c++ -l BSD-3-Clause
+```
+
 ## License
 
 Released under the [MIT License](LICENSES/MIT.txt).
