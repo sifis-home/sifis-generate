@@ -1,0 +1,154 @@
+name: {{ name }}-docker-app
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  docker-image:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install cross
+      env:
+        CROSS_LINK: https://github.com/cross-rs/cross/releases/download
+        CROSS_VERSION: v0.2.5
+        CROSS_BINARY: cross-x86_64-unknown-linux-gnu.tar.gz
+      run: |
+        curl -L "$CROSS_LINK/$CROSS_VERSION/$CROSS_BINARY" |
+        tar xz -C $HOME/.cargo/bin
+
+    - name: Install manifest
+      env:
+        MANIFEST_LINK: https://github.com/sifis-home/manifest/releases/download
+        MANIFEST_VERSION: v0.1.0
+        MANIFEST_BINARY: manifest-0.1.0-x86_64-unknown-linux-gnu.tar.gz
+      run: |
+        curl -L "$MANIFEST_LINK/$MANIFEST_VERSION/$MANIFEST_BINARY" |
+        tar xz -C $HOME/.cargo/bin
+
+    - name: Install grcov
+      env:
+        GRCOV_LINK: https://github.com/mozilla/grcov/releases/download
+        GRCOV_VERSION: v0.8.13
+      run: |
+        curl -L "$GRCOV_LINK/$GRCOV_VERSION/grcov-x86_64-unknown-linux-musl.tar.bz2" |
+        tar xj -C $HOME/.cargo/bin
+
+    - name: Install llvm-tools-preview
+      run: |
+        rustup component add llvm-tools-preview
+
+    # Not necessary on a newly created image, but strictly advised
+    - name: Run cargo clean
+      run: |
+        cargo clean
+
+    - name: Run tests
+      env:
+        RUSTFLAGS: "-Cinstrument-coverage"
+        LLVM_PROFILE_FILE: "{{ name }}-%p-%m.profraw"
+      run: |
+        cargo test --verbose
+
+    - name: Get total coverage
+      run: |
+        grcov . --binary-path ./target/debug/ -s . -t covdir --branch \
+              --token YOUR_COVDIR_TOKEN --ignore-not-existing --ignore "/*" \
+              --ignore "../*" -o covdir.json
+
+    - name: Save code coverage value
+      id: coverage
+      run: |
+        # Retrieve code coverage associated to the repository
+        FLOAT_COVERAGE=$(jq '.coveragePercent' covdir.json)
+        # Round the float value to the nearest value
+        COVERAGE_OUTPUT=$(printf "%.0f" $FLOAT_COVERAGE)
+        # Save code coverage value in an environment variable
+        echo "value=$COVERAGE_OUTPUT" >> $GITHUB_OUTPUT
+
+    - name: Build x86_64
+      run: |
+        cross clean
+        cross build --release --target x86_64-unknown-linux-musl
+        mkdir -p x86_64-unknown-linux-musl
+        cp target/x86_64-unknown-linux-musl/release/{{ name }} x86_64-unknown-linux-musl/
+
+    - name: Produce manifest
+      id: manifest
+      run: |
+        # Produce manifest
+        manifest -b target/x86_64-unknown-linux-musl/release/{{ name }} \
+                 -l data/library-api-labels.json -o {{ name }}.json
+        # Save json in a temporary variable
+        MANIFEST_JSON=$(jq -c '.' {{ name }}.json)
+        # Save json in an environment variable
+        echo "value=$MANIFEST_JSON" >> $GITHUB_OUTPUT
+
+    - name: Build aarch64
+      run: |
+        # cross have problems when you change the target see
+        # https://github.com/cross-rs/cross/issues/724
+        cross clean
+        cross build --release --target aarch64-unknown-linux-musl
+        mkdir -p aarch64-unknown-linux-musl
+        cp target/aarch64-unknown-linux-musl/release/{{ name }} aarch64-unknown-linux-musl/
+
+    - name: Get tag
+      id: tag
+      run: |
+        if [ ${GITHUB_REF} == "refs/heads/master" ]
+        then
+          echo "value=master" >> $GITHUB_OUTPUT
+        else
+          ONLY_VERSION=$(echo $GITHUB_REF | sed -E 's/refs\/tags\/v//')
+          echo "value=$ONLY_VERSION" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Login to GitHub container registry (ghcr.io)
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username:  {{ '${{ github.actor }}' }}
+        password: {{ '${{ secrets.GITHUB_TOKEN }}' }}
+
+    - name: Build and push amd64
+      uses: docker/build-push-action@v4
+      with:
+        context: x86_64-unknown-linux-musl
+        file: docker/Dockerfile-amd64
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ghcr.io/sifis-home/3pa-{{ name }}-amd64:{{ '${{ steps.tag.outputs.value }}' }}
+          ghcr.io/sifis-home/3pa-{{ name }}-amd64:latest
+        labels: |
+          org.opencontainers.image.description={{ image_description }}
+          software.quality={{ '${{ steps.coverage.outputs.value }}' }}
+          manifest={{ '${{ steps.manifest.outputs.value }}' }}
+
+    - name: Build and push arm64v8
+      uses: docker/build-push-action@v4
+      with:
+        context: aarch64-unknown-linux-musl
+        file: docker/Dockerfile-arm64
+        platforms: linux/arm64
+        push: true
+        tags: |
+          ghcr.io/sifis-home/3pa-{{ name }}-arm64:{{ '${{ steps.tag.outputs.value }}' }}
+          ghcr.io/sifis-home/3pa-{{ name }}-arm64:latest
+        labels: |
+          org.opencontainers.image.description={{ image_description }}
+          software.quality={{ '${{ steps.coverage.outputs.value }}' }}
+          manifest={{ '${{ steps.manifest.outputs.value }}' }}

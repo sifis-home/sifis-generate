@@ -12,6 +12,7 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("md.README", "README.md"),
     ("ci.github", "github.yml"),
     ("ci.github.deploy", "github-deploy.yml"),
+    ("ci.github.docker", "github-docker-application.yml"),
     ("fuzz.gitignore", ".gitignore-fuzz"),
     ("fuzz.cargo", "cargo-fuzz.toml"),
     ("fuzz.target", "fuzz_target_1.rs")
@@ -58,6 +59,10 @@ impl Cargo {
 
         // Continuous Integration
         template_files.insert(github.join(format!("{name}.yml")), "ci.github");
+        template_files.insert(
+            github.join(format!("{name}-docker-application.yml")),
+            "ci.github.docker",
+        );
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
         // Fuzz
