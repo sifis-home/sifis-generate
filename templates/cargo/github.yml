@@ -1061,9 +1061,9 @@ jobs:
         cargo +nightly careful test
         # cargo +nightly careful run
 
-################################## FUZZY LAYER #################################
+################################## FUZZING LAYER ###############################
 
-  fuzzy-ubuntu:
+  fuzzing-ubuntu:
 
     needs: [valgrind-ubuntu, careful-ubuntu, address-sanitizer-ubuntu]
 
@@ -1088,7 +1088,7 @@ jobs:
     - name: Run cargo-fuzz
       run: cargo fuzz build --target x86_64-unknown-linux-gnu
 
-  fuzzy-macos:
+  fuzzing-macos:
 
     needs: [careful-macos, address-sanitizer-macos]
 
