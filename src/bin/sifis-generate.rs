@@ -122,6 +122,7 @@ impl<T: Serialize> Provider for ClapSerialized<T> {
 #[derive(Parser, Debug, Serialize, Deserialize)]
 struct CargoData {
     /// Docker image description.
+    #[clap(long)]
     docker_image_description: String,
     #[clap(flatten)]
     #[serde(flatten)]
