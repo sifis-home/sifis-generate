@@ -70,7 +70,8 @@ $ sifis-generate yarn [--license LICENSE --name NAME --branch GITHUB_BRANCH] pro
 
 ## Configuration
 
-It is possible to save a `config.toml` in `${XDG_CONFIG_HOME}/sifis-generate` with overrides for all the default and optional values, e.g:
+It is possible to save a `config.toml` in `${XDG_CONFIG_HOME}/sifis-generate` (Usually `~/.config/sifis-generate`) with overrides for
+ all the default and optional values, e.g:
 
 ``` toml
 [default]
@@ -80,12 +81,18 @@ license = "BSD-3-Clause"
 kind = "c++"
 ```
 
-Will override the default `license` and `meson.kind` configuration items. The cli arguments take priority over the built-in defaults and
-the `config.toml` overrides.
+Will override the default `license` and `meson.kind` configuration items and it would be equivalent to call:
 
 ``` sh
 $ sifis-generate meson -k c++ -l BSD-3-Clause
 ```
+
+The cli arguments take priority over the built-in defaults and the `config.toml` overrides so
+```
+$ sifis-generate meson -l LGPL-2.1
+```
+
+Would take the `kind = c++` from the `config.toml` and `LGPL-2.1` from the command line.
 
 ## License
 
