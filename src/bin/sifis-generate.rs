@@ -120,6 +120,15 @@ impl<T: Serialize> Provider for ClapSerialized<T> {
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize)]
+struct CargoData {
+    /// Docker image description.
+    docker_image_description: String,
+    #[clap(flatten)]
+    #[serde(flatten)]
+    common: CommonData,
+}
+
+#[derive(Parser, Debug, Serialize, Deserialize)]
 struct MesonData {
     /// Kind of a new meson project
     #[clap(long, short, value_parser = project_kind, default_value = "c")]
@@ -151,7 +160,7 @@ fn project_kind(
 #[derive(Parser, Debug)]
 enum Cmd {
     /// Generate a CI for a cargo project.
-    Cargo(CommonData),
+    Cargo(CargoData),
     /// Generate a new maven project
     Maven(MavenData),
     /// Generate a new meson project
@@ -212,10 +221,15 @@ fn main() -> anyhow::Result<()> {
     match sub {
         ("cargo", matches) => {
             let config = config
-                .merge(ClapSerialized::<CommonData>::globals(matches.clone()))
+                .merge(ClapSerialized::<CargoData>::globals(matches.clone()))
                 .select("cargo");
-            let data: CommonData = config.extract()?;
-            Cargo::new().create_ci(&data.name, &data.project_path, &data.license, &data.branch)
+            let data: CargoData = config.extract()?;
+            Cargo::new(&data.docker_image_description).create_ci(
+                &data.common.name,
+                &data.common.project_path,
+                &data.common.license,
+                &data.common.branch,
+            )
         }
         ("maven", matches) => {
             let config = config

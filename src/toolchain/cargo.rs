@@ -20,9 +20,9 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
 
 /// A cargo project data.
 #[derive(Default)]
-pub struct Cargo;
+pub struct Cargo<'a>(&'a str);
 
-impl CreateCi for Cargo {
+impl<'a> CreateCi for Cargo<'a> {
     fn create_ci(
         &self,
         project_name: &str,
@@ -37,10 +37,10 @@ impl CreateCi for Cargo {
     }
 }
 
-impl Cargo {
+impl<'a> Cargo<'a> {
     /// Creates a new `Cargo` instance.
-    pub fn new() -> Self {
-        Self
+    pub fn new(docker_image_description: &'a str) -> Self {
+        Self(docker_image_description)
     }
 
     fn project_structure(
@@ -74,7 +74,7 @@ impl Cargo {
     }
 }
 
-impl BuildTemplate for Cargo {
+impl<'a> BuildTemplate for Cargo<'a> {
     fn define(
         &self,
         project_path: &Path,
@@ -91,6 +91,10 @@ impl BuildTemplate for Cargo {
         context.insert("name", Value::from_serializable(&project_name));
         context.insert("branch", Value::from_serializable(&github_branch));
         context.insert("license_id", Value::from_serializable(&license));
+        context.insert(
+            "docker_image_description",
+            Value::from_serializable(&self.0),
+        );
 
         let (files, dirs) = Cargo::project_structure(project_path, project_name);
 
