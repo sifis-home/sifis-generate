@@ -134,7 +134,7 @@ jobs:
           ghcr.io/sifis-home/3pa-{{ name }}-amd64:{{ '${{ steps.tag.outputs.value }}' }}
           ghcr.io/sifis-home/3pa-{{ name }}-amd64:latest
         labels: |
-          org.opencontainers.image.description={{ image_description }}
+          org.opencontainers.image.description={{ docker_image_description }}
           software.quality={{ '${{ steps.coverage.outputs.value }}' }}
           manifest={{ '${{ steps.manifest.outputs.value }}' }}
 
@@ -149,6 +149,6 @@ jobs:
           ghcr.io/sifis-home/3pa-{{ name }}-arm64:{{ '${{ steps.tag.outputs.value }}' }}
           ghcr.io/sifis-home/3pa-{{ name }}-arm64:latest
         labels: |
-          org.opencontainers.image.description={{ image_description }}
+          org.opencontainers.image.description={{ docker_image_description }}
           software.quality={{ '${{ steps.coverage.outputs.value }}' }}
           manifest={{ '${{ steps.manifest.outputs.value }}' }}
