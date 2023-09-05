@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: REUSE Compliance Check
       uses: fsfe/reuse-action@v1
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Run clang-format style check for C/C++/Protobuf programs
       uses: jidicula/clang-format-action@v4.10.2
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install rust-code-analysis
       run: |
@@ -75,7 +75,7 @@ jobs:
     runs-on: {{ '${{ matrix.platform }}' }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up last Python version
       uses: actions/setup-python@v2
@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Run test suite with docker-compose
       run: |
