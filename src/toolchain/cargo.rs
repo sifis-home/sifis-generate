@@ -69,8 +69,8 @@ impl<'a> Cargo<'a> {
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
         // Docker
-        template_files.insert(docker.join("Dockerfile-amd64.yml"), "docker.amd64");
-        template_files.insert(docker.join("Dockerfile-arm64.yml"), "docker.arm64");
+        template_files.insert(docker.join("Dockerfile-amd64"), "docker.amd64");
+        template_files.insert(docker.join("Dockerfile-arm64"), "docker.arm64");
 
         // Fuzz
         template_files.insert(fuzz.join(".gitignore"), "fuzz.gitignore");
