@@ -13,6 +13,8 @@ static CARGO_TEMPLATES: &[(&str, &str)] = &builtin_templates!["cargo" =>
     ("ci.github", "github.yml"),
     ("ci.github.deploy", "github-deploy.yml"),
     ("ci.github.docker", "github-docker-application.yml"),
+    ("docker.amd64", "Dockerfile-amd64"),
+    ("docker.arm64", "Dockerfile-arm64"),
     ("fuzz.gitignore", ".gitignore-fuzz"),
     ("fuzz.cargo", "cargo-fuzz.toml"),
     ("fuzz.target", "fuzz_target_1.rs")
@@ -49,6 +51,7 @@ impl<'a> Cargo<'a> {
     ) -> (HashMap<PathBuf, &'static str>, Vec<PathBuf>) {
         let root = project_path.to_path_buf();
         let github = project_path.join(".github/workflows");
+        let docker = project_path.join("docker");
         let fuzz = project_path.join("fuzz");
         let fuzz_targets = fuzz.join("fuzz_targets");
 
@@ -65,12 +68,19 @@ impl<'a> Cargo<'a> {
         );
         template_files.insert(github.join("deploy.yml"), "ci.github.deploy");
 
+        // Docker
+        template_files.insert(docker.join("Dockerfile-amd64.yml"), "docker.amd64");
+        template_files.insert(docker.join("Dockerfile-arm64.yml"), "docker.arm64");
+
         // Fuzz
         template_files.insert(fuzz.join(".gitignore"), "fuzz.gitignore");
         template_files.insert(fuzz.join("Cargo.toml"), "fuzz.cargo");
         template_files.insert(fuzz_targets.join("fuzz_target_1.rs"), "fuzz.target");
 
-        (template_files, vec![root, github, fuzz, fuzz_targets])
+        (
+            template_files,
+            vec![root, github, docker, fuzz, fuzz_targets],
+        )
     }
 }
 

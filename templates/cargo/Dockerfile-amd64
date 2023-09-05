@@ -1,0 +1,3 @@
+FROM amd64/alpine
+ADD {{ name }} /
+ENTRYPOINT ["/{{ name }}"]
