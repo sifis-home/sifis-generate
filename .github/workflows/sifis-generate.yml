@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
 
     - name: REUSE Compliance Check
@@ -46,7 +46,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -87,7 +87,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install rust-code-analysis on Ubuntu
       if: matrix.conf == 'ubuntu'
@@ -129,7 +129,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -150,7 +150,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -169,7 +169,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -217,7 +217,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -265,7 +265,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -377,7 +377,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -440,7 +440,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
@@ -505,7 +505,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -529,7 +529,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -569,7 +569,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -607,7 +607,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -631,7 +631,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -671,7 +671,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -709,7 +709,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -733,7 +733,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -774,7 +774,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Check dependencies changes
       uses: dorny/paths-filter@v2
@@ -815,7 +815,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -847,7 +847,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -879,7 +879,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -913,7 +913,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install valgrind
       run: |
@@ -941,7 +941,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -973,7 +973,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -998,7 +998,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -1030,7 +1030,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -1057,7 +1057,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -1091,7 +1091,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
@@ -1116,7 +1116,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install Rust nightly
       uses: dtolnay/rust-toolchain@nightly
