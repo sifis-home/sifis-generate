@@ -3,6 +3,8 @@
 [![Actions Status][actions badge]][actions]
 [![LICENSE][license badge]][license]
 
+**NOTE** the development is now happening as [ci-generate](https://github.com/SoftengPoliTo/ci-generate/).
+
 This tool generates either new projects for some build systems or configuration
 files for some Continuous Integration with the use of templates.
 

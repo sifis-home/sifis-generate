@@ -1,14 +1,11 @@
 [package]
 name = "sifis-generate"
-version = "0.5.3"
+version = "0.5.4"
 edition = "2021"
 license = "MIT"
-description = "Generate a new project for some build systems with the use of templates."
+description = "Generate a new project for some build systems with the use of templates. <renamed to ci-generate>"
 repository = "https://github.com/sifis-home/sifis-generate"
-homepage = "https://github.com/sifis-home/sifis-generate"
-
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+homepage = "https://github.com/SoftengPoliTo/ci-generate/"
 
 [dependencies]
 anyhow = "1"
